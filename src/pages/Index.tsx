@@ -1,12 +1,14 @@
 
-import { DashboardStats } from "@/components/DashboardStats"
 import { BotsList } from "@/components/BotsList"
 import { Button } from "@/components/ui/button"
 import { Bell, Search, Plus, Bot } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/hooks/useAuth"
 
 const Index = () => {
+  const { user } = useAuth()
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header */}
@@ -39,10 +41,11 @@ const Index = () => {
             </Badge>
           </Button>
           
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Bot
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-600 hidden sm:block">
+              {user?.email}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -51,12 +54,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           {/* Welcome Section */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Bem-vindo de volta!</h2>
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">
+              Bem-vindo de volta, {user?.email?.split('@')[0] || 'usuário'}!
+            </h2>
             <p className="text-slate-600">Gerencie seus bots de atendimento inteligente.</p>
           </div>
-          
-          {/* Stats Cards */}
-          <DashboardStats />
           
           {/* Bots List */}
           <BotsList />

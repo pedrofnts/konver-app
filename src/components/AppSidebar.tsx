@@ -22,13 +22,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/useAuth"
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -45,8 +44,9 @@ const settingsItems = [
 ]
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar()
+  const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
+  const { user, signOut } = useAuth()
   const currentPath = location.pathname
 
   const isActive = (path: string) => {
@@ -60,10 +60,14 @@ export function AppSidebar() {
       ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium shadow-md" 
       : "hover:bg-slate-100 text-slate-700 hover:text-slate-900"
 
+  const handleSignOut = async () => {
+    await signOut()
+  }
+
   return (
     <Sidebar
       className={`${collapsed ? "w-16" : "w-64"} border-r border-slate-200 bg-white shadow-sm`}
-      collapsible
+      collapsible="icon"
     >
       <SidebarHeader className="border-b border-slate-200 p-4">
         <div className="flex items-center gap-3">
@@ -126,17 +130,26 @@ export function AppSidebar() {
           <Avatar className="w-8 h-8">
             <AvatarImage src="/placeholder.svg" />
             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm">
-              AD
+              {user?.email?.substring(0, 2).toUpperCase() || "AD"}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-slate-800 truncate">Admin User</p>
-              <p className="text-xs text-slate-500 truncate">admin@botbuilder.com</p>
+              <p className="font-medium text-sm text-slate-800 truncate">
+                {user?.email || "Admin User"}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {user?.email || "admin@botbuilder.com"}
+              </p>
             </div>
           )}
           {!collapsed && (
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-red-50 hover:text-red-600">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-2 hover:bg-red-50 hover:text-red-600"
+              onClick={handleSignOut}
+            >
               <LogOut className="w-4 h-4" />
             </Button>
           )}

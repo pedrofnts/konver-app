@@ -1,78 +1,161 @@
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Bot, Settings, MessageSquare, MoreVertical, Power, Pause } from "lucide-react"
+import { Bot, Settings, MessageSquare, MoreVertical, Power, Pause, Plus } from "lucide-react"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/hooks/useAuth"
+import { useToast } from "@/hooks/use-toast"
 
-const bots = [
-  {
-    id: 1,
-    name: "Atendimento Vendas",
-    description: "Bot especializado em vendas e conversão de leads",
-    status: "Ativo",
-    conversations: 156,
-    lastActive: "2 min atrás",
-    performance: 94.2,
-    statusColor: "green"
-  },
-  {
-    id: 2,
-    name: "Suporte Técnico",
-    description: "Assistente para resolução de problemas técnicos",
-    status: "Ativo",
-    conversations: 89,
-    lastActive: "5 min atrás",
-    performance: 91.8,
-    statusColor: "green"
-  },
-  {
-    id: 3,
-    name: "FAQ Geral",
-    description: "Respostas automáticas para perguntas frequentes",
-    status: "Pausado",
-    conversations: 34,
-    lastActive: "1h atrás",
-    performance: 87.5,
-    statusColor: "yellow"
-  },
-  {
-    id: 4,
-    name: "Onboarding",
-    description: "Guia novos usuários através do processo de cadastro",
-    status: "Ativo",
-    conversations: 67,
-    lastActive: "3 min atrás",
-    performance: 96.1,
-    statusColor: "green"
-  },
-  {
-    id: 5,
-    name: "Bot Financeiro",
-    description: "Assistente para dúvidas sobre pagamentos e faturas",
-    status: "Ativo",
-    conversations: 23,
-    lastActive: "12 min atrás",
-    performance: 89.3,
-    statusColor: "green"
-  },
-  {
-    id: 6,
-    name: "Agendamento",
-    description: "Gerencia agendamentos e compromissos automaticamente",
-    status: "Pausado",
-    conversations: 12,
-    lastActive: "2h atrás",
-    performance: 85.7,
-    statusColor: "yellow"
-  }
-]
+type BotData = {
+  id: string
+  name: string
+  description: string | null
+  status: string
+  conversations: number
+  performance: number
+  created_at: string
+}
 
 export function BotsList() {
+  const [bots, setBots] = useState<BotData[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    if (user) {
+      fetchBots()
+    }
+  }, [user])
+
+  const fetchBots = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bots')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setBots(data || [])
+    } catch (error) {
+      console.error('Error fetching bots:', error)
+      toast({
+        title: "Erro ao carregar bots",
+        description: "Não foi possível carregar seus bots.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const createSampleBot = async () => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('bots')
+        .insert({
+          user_id: user.id,
+          name: "Bot de Exemplo",
+          description: "Um bot de exemplo para começar",
+          status: "Ativo",
+          conversations: 0,
+          performance: 85.0
+        })
+
+      if (error) throw error
+
+      toast({
+        title: "Bot criado!",
+        description: "Seu primeiro bot foi criado com sucesso.",
+      })
+
+      fetchBots()
+    } catch (error) {
+      console.error('Error creating bot:', error)
+      toast({
+        title: "Erro ao criar bot",
+        description: "Não foi possível criar o bot.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-slate-800">Meus Bots</h3>
+          <p className="text-sm text-slate-600">Carregando...</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-3 bg-slate-200 rounded"></div>
+                  <div className="h-3 bg-slate-200 rounded w-2/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (bots.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-slate-800">Meus Bots</h3>
+          <p className="text-sm text-slate-600">0 bots configurados</p>
+        </div>
+        
+        <Card className="text-center py-12">
+          <CardContent>
+            <Bot className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">
+              Nenhum bot encontrado
+            </h3>
+            <p className="text-slate-600 mb-6">
+              Crie seu primeiro bot para começar a automatizar suas conversas.
+            </p>
+            <Button 
+              onClick={createSampleBot}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Criar Primeiro Bot
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-slate-800">Meus Bots</h3>
-        <p className="text-sm text-slate-600">{bots.length} bots configurados</p>
+        <div className="flex items-center gap-4">
+          <p className="text-sm text-slate-600">{bots.length} bots configurados</p>
+          <Button 
+            onClick={createSampleBot}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Bot
+          </Button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -95,7 +178,7 @@ export function BotsList() {
                     <Badge 
                       variant="secondary"
                       className={`text-xs mt-1 ${
-                        bot.statusColor === 'green' 
+                        bot.status === 'Ativo' 
                           ? 'bg-emerald-100 text-emerald-700' 
                           : 'bg-yellow-100 text-yellow-700'
                       }`}
@@ -112,7 +195,7 @@ export function BotsList() {
             
             <CardContent className="space-y-4">
               <p className="text-sm text-slate-600 line-clamp-2">
-                {bot.description}
+                {bot.description || "Sem descrição"}
               </p>
               
               <div className="flex items-center justify-between text-xs text-slate-500">
@@ -120,7 +203,9 @@ export function BotsList() {
                   <MessageSquare className="w-3 h-3" />
                   {bot.conversations} conversas
                 </span>
-                <span>há {bot.lastActive}</span>
+                <span>
+                  {new Date(bot.created_at).toLocaleDateString('pt-BR')}
+                </span>
               </div>
               
               <div className="space-y-2">
