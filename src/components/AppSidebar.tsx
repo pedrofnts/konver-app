@@ -76,8 +76,8 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div>
-              <h2 className="font-bold text-lg text-slate-800">BotBuilder</h2>
-              <p className="text-xs text-slate-500">AI Assistant Platform</p>
+              <h2 className="font-bold text-lg text-slate-800">Gerenciamento</h2>
+              <p className="text-xs text-slate-500">Gerenciamento</p>
             </div>
           )}
         </div>

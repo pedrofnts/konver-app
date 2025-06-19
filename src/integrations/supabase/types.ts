@@ -11,66 +11,109 @@ export type Database = {
     Tables: {
       bots: {
         Row: {
-          conversations: number
-          created_at: string
-          description: string | null
           id: string
-          name: string
-          performance: number
-          status: string
-          updated_at: string
           user_id: string
+          name: string
+          description: string | null
+          status: string
+          conversations: number
+          performance: number
+          prompt: string | null
+          temperature: number | null
+          max_tokens: number | null
+          knowledge_base: Json | null
+          persona_name: string | null
+          persona_objective: string | null
+          persona_personality: string | null
+          persona_style: string | null
+          persona_target_audience: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          conversations?: number
-          created_at?: string
-          description?: string | null
           id?: string
-          name: string
-          performance?: number
-          status?: string
-          updated_at?: string
           user_id: string
+          name: string
+          description?: string | null
+          status?: string
+          conversations?: number
+          performance?: number
+          prompt?: string | null
+          temperature?: number | null
+          max_tokens?: number | null
+          knowledge_base?: Json | null
+          persona_name?: string | null
+          persona_objective?: string | null
+          persona_personality?: string | null
+          persona_style?: string | null
+          persona_target_audience?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          conversations?: number
-          created_at?: string
-          description?: string | null
           id?: string
-          name?: string
-          performance?: number
-          status?: string
-          updated_at?: string
           user_id?: string
+          name?: string
+          description?: string | null
+          status?: string
+          conversations?: number
+          performance?: number
+          prompt?: string | null
+          temperature?: number | null
+          max_tokens?: number | null
+          knowledge_base?: Json | null
+          persona_name?: string | null
+          persona_objective?: string | null
+          persona_personality?: string | null
+          persona_style?: string | null
+          persona_target_audience?: string | null
+          created_at?: string
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          created_at: string
+          id: string
           email: string | null
           full_name: string | null
-          id: string
+          avatar_url: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
-          created_at?: string
+          id: string
           email?: string | null
           full_name?: string | null
-          id: string
+          avatar_url?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string
+          id?: string
           email?: string | null
           full_name?: string | null
-          id?: string
+          avatar_url?: string | null
+          created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
