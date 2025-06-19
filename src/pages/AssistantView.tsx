@@ -265,7 +265,7 @@ export default function AssistantView() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                  AI Assistant Hub
+                  Bella Dash
                 </h1>
                 <p className="text-sm text-slate-500 font-medium">Assistente não encontrado</p>
               </div>
@@ -327,7 +327,7 @@ export default function AssistantView() {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                AI Assistant Hub
+                Bella Dash
               </h1>
               <p className="text-sm text-slate-500 font-medium">
                 Configurações do Assistente

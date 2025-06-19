@@ -44,7 +44,7 @@ export default function Auth() {
             <Bot className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-2">
-            Gerenciamento
+            Bella Dash
           </h1>
           <p className="text-slate-600">
             {isLogin ? "Entre na sua conta" : "Crie sua conta"}
@@ -145,7 +145,7 @@ export default function Auth() {
 
         {/* Footer */}
         <div className="text-center text-sm text-slate-500">
-          <p>© 2024 AI Assistant Hub. Todos os direitos reservados.</p>
+          <p>© 2024 Bella Dash. Todos os direitos reservados.</p>
         </div>
       </div>
     </div>
