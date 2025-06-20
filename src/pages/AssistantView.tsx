@@ -186,14 +186,8 @@ export default function AssistantView() {
     setKnowledgeFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const addKnowledgeFile = () => {
-    // Simulate file upload
-    const newFile: KnowledgeFile = {
-      name: `documento_${Date.now()}.pdf`,
-      type: 'pdf',
-      size: '2.5 MB'
-    };
-    setKnowledgeFiles(prev => [...prev, newFile]);
+  const addKnowledgeFile = (file: KnowledgeFile) => {
+    setKnowledgeFiles(prev => [...prev, file]);
   };
 
   const handlePromptModificationRequest = (request: PromptModificationRequest) => {
@@ -487,6 +481,7 @@ export default function AssistantView() {
                 knowledgeFiles={knowledgeFiles}
                 addKnowledgeFile={addKnowledgeFile}
                 removeKnowledgeFile={removeKnowledgeFile}
+                botId={id || ''}
               />
             </TabsContent>
           </Tabs>

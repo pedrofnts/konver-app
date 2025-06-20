@@ -6,9 +6,11 @@ export interface Message {
 }
 
 export interface KnowledgeFile {
+  id: string;
   name: string;
   type: string;
   size: string;
+  path: string;
 }
 
 export interface AssistantData {
