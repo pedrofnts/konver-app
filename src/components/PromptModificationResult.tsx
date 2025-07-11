@@ -114,7 +114,7 @@ export default function PromptModificationResult({
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold text-slate-800">Modificações de Prompt</h3>
         <Badge variant="secondary" className="px-3 py-1">
-          {results.length} solicitação{results.length !== 1 ? 'ões' : ''}
+                            {results.length} {results.length === 1 ? 'solicitação' : 'solicitações'}
         </Badge>
       </div>
 

@@ -48,7 +48,6 @@ export default function AssistantView() {
   const [systemPrompt, setSystemPrompt] = useState('');
   const [temperature, setTemperature] = useState([0.7]);
   const [assistantStatus, setAssistantStatus] = useState('Ativo');
-  const [knowledgeFiles, setKnowledgeFiles] = useState<KnowledgeFile[]>([]);
   
   // Persona states
   const [personaObjective, setPersonaObjective] = useState('');
@@ -85,7 +84,7 @@ export default function AssistantView() {
         prompt: data.prompt,
         temperature: data.temperature,
         max_tokens: data.max_tokens,
-        knowledge_base: Array.isArray(data.knowledge_base) ? data.knowledge_base as unknown as KnowledgeFile[] : [],
+        knowledge_base: null, // Not used anymore
         persona_name: data.persona_name,
         persona_objective: data.persona_objective,
         persona_personality: data.persona_personality,
@@ -101,7 +100,6 @@ export default function AssistantView() {
       setSystemPrompt(data.prompt || 'You are a helpful AI assistant.');
       setTemperature([data.temperature || 0.7]);
       setAssistantStatus(data.status);
-      setKnowledgeFiles(Array.isArray(data.knowledge_base) ? data.knowledge_base as unknown as KnowledgeFile[] : []);
       
       // Set persona states
       setPersonaObjective(data.persona_objective || '');
@@ -139,7 +137,6 @@ export default function AssistantView() {
           prompt: systemPrompt,
           temperature: temperature[0],
           status: assistantStatus,
-          knowledge_base: knowledgeFiles as any,
           persona_name: assistantName,
           persona_objective: personaObjective,
           persona_personality: personaPersonality,
@@ -162,7 +159,7 @@ export default function AssistantView() {
         prompt: systemPrompt,
         temperature: temperature[0],
         status: assistantStatus,
-        knowledge_base: knowledgeFiles,
+        knowledge_base: null, // Not used anymore
         updated_at: new Date().toISOString()
       });
 
@@ -180,14 +177,6 @@ export default function AssistantView() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const removeKnowledgeFile = (index: number) => {
-    setKnowledgeFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const addKnowledgeFile = (file: KnowledgeFile) => {
-    setKnowledgeFiles(prev => [...prev, file]);
   };
 
   const handlePromptModificationRequest = (request: PromptModificationRequest) => {
@@ -452,12 +441,11 @@ export default function AssistantView() {
             {/* Settings */}
             <TabsContent value="settings">
               <AssistantSettingsTab
+                botId={id || ''}
                 assistantName={assistantName}
                 setAssistantName={setAssistantName}
                 assistantDescription={assistantDescription}
                 setAssistantDescription={setAssistantDescription}
-                systemPrompt={systemPrompt}
-                setSystemPrompt={setSystemPrompt}
                 temperature={temperature}
                 setTemperature={setTemperature}
                 assistantStatus={assistantStatus}
@@ -478,9 +466,6 @@ export default function AssistantView() {
             {/* Knowledge Base */}
             <TabsContent value="knowledge">
               <AssistantKnowledgeTab
-                knowledgeFiles={knowledgeFiles}
-                addKnowledgeFile={addKnowledgeFile}
-                removeKnowledgeFile={removeKnowledgeFile}
                 botId={id || ''}
               />
             </TabsContent>

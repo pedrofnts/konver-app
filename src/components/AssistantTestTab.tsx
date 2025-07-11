@@ -1,13 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot, MessageSquare, AlertCircle, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Send, Bot, MessageSquare, AlertCircle, RotateCcw, Zap, Shield, ChevronDown, Settings } from "lucide-react";
 import { Message, AssistantData } from "@/types/assistant";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PromptVersion, PromptVersionSummary } from "@/integrations/supabase/types";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AssistantTestTabProps {
   assistant: AssistantData;
@@ -27,10 +30,72 @@ export default function AssistantTestTab({
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sessionId = useRef<string>(crypto.randomUUID());
+  
+  // Estados para gerenciar versões de prompts
+  const [promptVersions, setPromptVersions] = useState<PromptVersionSummary>({
+    principal: { active: null, versions: [] },
+    triagem: { active: null, versions: [] }
+  });
+  const [selectedPrincipalId, setSelectedPrincipalId] = useState<string | null>(null);
+  const [selectedTriagemId, setSelectedTriagemId] = useState<string | null>(null);
+  const [loadingPrompts, setLoadingPrompts] = useState(true);
+  const [showPromptSettings, setShowPromptSettings] = useState(false);
+  
+  const { user } = useAuth();
+
+  // Função para buscar versões dos prompts
+  const fetchPromptVersions = async () => {
+    if (!assistant.id || !user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('prompt_versions')
+        .select('*')
+        .eq('bot_id', assistant.id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Organizar por tipo
+      const principalVersions = data.filter(p => p.prompt_type === 'principal') as PromptVersion[];
+      const triagemVersions = data.filter(p => p.prompt_type === 'triagem') as PromptVersion[];
+
+      const promptSummary: PromptVersionSummary = {
+        principal: {
+          active: principalVersions.find(p => p.is_active) || null,
+          versions: principalVersions
+        },
+        triagem: {
+          active: triagemVersions.find(p => p.is_active) || null,
+          versions: triagemVersions
+        }
+      };
+
+      setPromptVersions(promptSummary);
+      
+      // Definir versões ativas como padrão
+      if (promptSummary.principal.active && !selectedPrincipalId) {
+        setSelectedPrincipalId(promptSummary.principal.active.id);
+      }
+      if (promptSummary.triagem.active && !selectedTriagemId) {
+        setSelectedTriagemId(promptSummary.triagem.active.id);
+      }
+    } catch (error) {
+      console.error('Error fetching prompt versions:', error);
+    } finally {
+      setLoadingPrompts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPromptVersions();
+  }, [assistant.id, user]);
 
   const clearChat = () => {
     setMessages([]);
     setError(null);
+    setShowPromptSettings(false); // Fechar configurações ao limpar chat
     sessionId.current = crypto.randomUUID(); // Generate new session ID
   };
 
@@ -56,7 +121,11 @@ export default function AssistantTestTab({
         body: {
           chatInput: messageContent,
           sessionId: sessionId.current,
-          assistant: assistant.id
+          assistant: assistant.id,
+          promptVersions: {
+            principal: selectedPrincipalId,
+            triagem: selectedTriagemId
+          }
         }
       });
 
@@ -108,16 +177,127 @@ export default function AssistantTestTab({
                 Conversa
               </span>
             </CardTitle>
-            <Button
-              onClick={clearChat}
-              variant="outline"
-              size="sm"
-              disabled={messages.length === 0}
-            >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Limpar Chat
-            </Button>
+            
+            <div className="flex items-center gap-2">
+              {/* Botão de configurações de prompts */}
+              {!loadingPrompts && (promptVersions.principal.versions.length > 0 || promptVersions.triagem.versions.length > 0) && (
+                <Button
+                  onClick={() => setShowPromptSettings(!showPromptSettings)}
+                  variant="outline"
+                  size="sm"
+                  className={showPromptSettings ? "bg-slate-100" : ""}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Versões
+                </Button>
+              )}
+              
+              <Button
+                onClick={clearChat}
+                variant="outline"
+                size="sm"
+                disabled={messages.length === 0}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Limpar Chat
+              </Button>
+            </div>
           </div>
+          
+          {/* Seletores de Versão de Prompts - Mostrar apenas quando solicitado */}
+          {showPromptSettings && (
+            <>
+              {loadingPrompts && (
+                <div className="flex items-center gap-2 mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="w-4 h-4 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
+                  <span className="text-sm text-slate-600">Carregando versões dos prompts...</span>
+                </div>
+              )}
+              
+              {!loadingPrompts && (promptVersions.principal.versions.length > 0 || promptVersions.triagem.versions.length > 0) && (
+                <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-slate-600" />
+                    <span className="text-sm font-medium text-slate-700">Configurações de Versões</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Selector Principal */}
+                    {promptVersions.principal.versions.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium text-slate-700">Prompt Principal</span>
+                        </div>
+                        <Select value={selectedPrincipalId || ''} onValueChange={setSelectedPrincipalId}>
+                          <SelectTrigger className="w-full h-10">
+                            <SelectValue placeholder="Selecione uma versão" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                            {promptVersions.principal.versions.map((version) => (
+                              <SelectItem key={version.id} value={version.id} className="hover:bg-slate-50">
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="mr-2">v{version.version_number}</span>
+                                  {version.is_active && (
+                                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                      Ativo
+                                    </Badge>
+                                  )}
+                                  {version.description && (
+                                    <span className="text-xs text-slate-500 ml-2 truncate max-w-32">
+                                      {version.description}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
+                    {/* Selector Triagem */}
+                    {promptVersions.triagem.versions.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium text-slate-700">Prompt de Triagem</span>
+                        </div>
+                        <Select value={selectedTriagemId || ''} onValueChange={setSelectedTriagemId}>
+                          <SelectTrigger className="w-full h-10">
+                            <SelectValue placeholder="Selecione uma versão" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                            {promptVersions.triagem.versions.map((version) => (
+                              <SelectItem key={version.id} value={version.id} className="hover:bg-slate-50">
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="mr-2">v{version.version_number}</span>
+                                  {version.is_active && (
+                                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                      Ativo
+                                    </Badge>
+                                  )}
+                                  {version.description && (
+                                    <span className="text-xs text-slate-500 ml-2 truncate max-w-32">
+                                      {version.description}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="text-xs text-slate-500 bg-blue-50 p-2 rounded border border-blue-200">
+                    💡 Altere as versões dos prompts para testar diferentes comportamentos do assistente
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           {error && (

@@ -7,14 +7,15 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Save, Settings, User } from "lucide-react";
+import PromptManager from "./PromptManager";
+import { PromptVersionSummary } from "@/integrations/supabase/types";
 
 interface AssistantSettingsTabProps {
+  botId: string;
   assistantName: string;
   setAssistantName: (name: string) => void;
   assistantDescription: string;
   setAssistantDescription: (description: string) => void;
-  systemPrompt: string;
-  setSystemPrompt: (prompt: string) => void;
   temperature: number[];
   setTemperature: (temperature: number[]) => void;
   assistantStatus: string;
@@ -32,12 +33,11 @@ interface AssistantSettingsTabProps {
 }
 
 export default function AssistantSettingsTab({
+  botId,
   assistantName,
   setAssistantName,
   assistantDescription,
   setAssistantDescription,
-  systemPrompt,
-  setSystemPrompt,
   temperature,
   setTemperature,
   assistantStatus,
@@ -139,23 +139,25 @@ export default function AssistantSettingsTab({
 
           <Separator className="bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
 
+          {/* Sistema de Prompts Versionado */}
           <div>
-            <Label htmlFor="prompt" className="text-base font-medium text-slate-700">Prompt do Sistema</Label>
-            <Textarea
-              id="prompt"
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              placeholder="Defina a personalidade e comportamento do assistente..."
-              rows={8}
-              className="mt-3 rounded-xl border-slate-200/80 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20"
+            <Label className="text-base font-medium text-slate-700 mb-4 block">Sistema de Prompts</Label>
+            <PromptManager 
+              botId={botId}
+              onPromptsUpdate={(prompts: PromptVersionSummary) => {
+                // Callback opcional para quando os prompts são atualizados
+                console.log('Prompts updated:', prompts);
+              }}
             />
-            <p className="text-sm text-slate-500 mt-2">
-              Este prompt define como o assistente deve se comportar e responder às perguntas
+            <p className="text-sm text-slate-500 mt-3">
+              Gerencie diferentes versões dos prompts principal e de triagem do seu assistente
             </p>
           </div>
         </CardContent>
       </Card>
 
+      {/* Seção "Persona do Assistente" - Comentada temporariamente */}
+      {/* 
       <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-xl rounded-2xl">
         <CardHeader className="pb-6">
           <CardTitle className="flex items-center space-x-3 text-xl">
@@ -216,6 +218,7 @@ export default function AssistantSettingsTab({
           </div>
         </CardContent>
       </Card>
+      */}
     </div>
   );
 } 

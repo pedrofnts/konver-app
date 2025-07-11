@@ -1,73 +1,107 @@
-# Welcome to your Lovable project
+# Elegant AI Dashboard
 
-## Project info
+Um dashboard elegante para gerenciar assistentes de IA com versionamento avançado de prompts.
 
-**URL**: https://lovable.dev/projects/635df03e-a104-4755-9c40-58deb38e564a
+## 🚀 Funcionalidades Principais
 
-## How can I edit this code?
+- **Dashboard de Assistentes**: Visualização e gerenciamento completo dos bots
+- **Sistema de Conversas**: Interface de chat para testar assistentes
+- **Base de Conhecimento**: Upload e gerenciamento de arquivos para treinar assistentes
+- **Versionamento de Prompts**: Sistema robusto para gerenciar diferentes versões de prompts
 
-There are several ways of editing your application.
+## 📝 Sistema de Versionamento de Prompts
 
-**Use Lovable**
+### Tipos de Prompt
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/635df03e-a104-4755-9c40-58deb38e564a) and start prompting.
+1. **Prompt Principal**: Comportamento principal do assistente
+2. **Prompt de Triagem**: Lógica inicial para classificar e direcionar conversas
 
-Changes made via Lovable will be committed automatically to this repo.
+### Funcionalidades do Versionamento
 
-**Use your preferred IDE**
+- ✅ **Criação de Versões**: Crie novas versões com descrições
+- ✅ **Ativação/Desativação**: Apenas uma versão ativa por tipo
+- ✅ **Histórico Completo**: Visualize todas as versões anteriores
+- ✅ **Restauração**: Restaure qualquer versão anterior
+- ✅ **Auto-incremento**: Numeração automática das versões
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Estrutura do Banco de Dados
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```sql
+-- Tabela principal para versionamento
+CREATE TABLE prompt_versions (
+  id UUID PRIMARY KEY,
+  bot_id UUID REFERENCES bots(id),
+  user_id UUID REFERENCES auth.users(id),
+  prompt_type TEXT CHECK (prompt_type IN ('principal', 'triagem')),
+  content TEXT NOT NULL,
+  version_number INTEGER NOT NULL,
+  is_active BOOLEAN DEFAULT false,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  -- Garantir apenas uma versão ativa por tipo
+  UNIQUE(bot_id, prompt_type, is_active) DEFERRABLE
+);
 ```
 
-**Edit a file directly in GitHub**
+### Triggers Automáticos
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Auto-incremento de versão**: Calcula automaticamente o próximo número
+- **Versão única ativa**: Desativa automaticamente versões anteriores
 
-**Use GitHub Codespaces**
+## 🎨 Interface do Usuário
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Configurações do Assistente
 
-## What technologies are used for this project?
+- **Cards Visuais**: Interface moderna com gradientes e ícones
+- **Histórico Expandível**: Visualize versões anteriores em modal
+- **Criação Rápida**: Dialog intuitivo para novas versões
+- **Confirmação de Restauração**: Proteção contra alterações acidentais
 
-This project is built with:
+### Componentes Principais
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- `PromptManager.tsx`: Gerenciamento completo do sistema de versionamento
+- `AssistantSettingsTab.tsx`: Interface integrada nas configurações
+- `AssistantView.tsx`: Página principal do assistente
 
-## How can I deploy this project?
+## 🔧 Como Usar
 
-Simply open [Lovable](https://lovable.dev/projects/635df03e-a104-4755-9c40-58deb38e564a) and click on Share -> Publish.
+1. **Criar Nova Versão**:
+   - Clique no botão "Nova" no card do tipo de prompt desejado
+   - Adicione uma descrição (opcional)
+   - Digite o conteúdo do prompt
+   - Clique em "Criar e Ativar"
 
-## Can I connect a custom domain to my Lovable project?
+2. **Ver Histórico**:
+   - Clique em "Ver Histórico" para expandir versões anteriores
+   - Visualize conteúdo completo de cada versão
+   - Veja timestamps e descrições
 
-Yes, you can!
+3. **Restaurar Versão**:
+   - No histórico, clique em "Restaurar" na versão desejada
+   - Confirme a ação no dialog de segurança
+   - A versão será ativada automaticamente
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🛡️ Segurança e Integridade
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **Row Level Security (RLS)**: Usuários só acessam seus próprios dados
+- **Validação de Tipos**: Enum restrito para tipos de prompt
+- **Constraints de Unicidade**: Previne estados inconsistentes
+- **Soft Deletion**: Histórico preservado permanentemente
+
+## 🎯 Benefícios do Sistema
+
+1. **Controle Total**: Gerencie múltiplas versões sem perder histórico
+2. **Rollback Seguro**: Volte a qualquer versão anterior rapidamente
+3. **Experimentação**: Teste diferentes abordagens sem risco
+4. **Auditoria**: Rastreie mudanças com timestamps e descrições
+5. **Escalabilidade**: Suporte a novos tipos de prompt facilmente
+
+## 📊 Tecnologias Utilizadas
+
+- **Frontend**: React + TypeScript + Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Componentes**: shadcn/ui
+- **Ícones**: Lucide React
+- **Estado**: React Hooks + Context API
