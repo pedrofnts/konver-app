@@ -74,6 +74,88 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          message_type: string
+          metadata: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_type: string
+          metadata?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "external_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_conversations: {
+        Row: {
+          bot_id: string
+          created_at: string
+          external_id: string | null
+          id: string
+          last_message_at: string | null
+          metadata: Json | null
+          phone_number: string
+          status: string
+          updated_at: string
+          user_name: string
+        }
+        Insert: {
+          bot_id: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          metadata?: Json | null
+          phone_number: string
+          status?: string
+          updated_at?: string
+          user_name: string
+        }
+        Update: {
+          bot_id?: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          metadata?: Json | null
+          phone_number?: string
+          status?: string
+          updated_at?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_conversations_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       knowledge_base_files: {
         Row: {
           bot_id: string
@@ -123,6 +205,72 @@ export type Database = {
             columns: ["bot_id"]
             isOneToOne: false
             referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_feedback: {
+        Row: {
+          bot_id: string | null
+          conversation_context: Json | null
+          conversation_message_id: string | null
+          created_at: string | null
+          created_by_user_id: string | null
+          id: string
+          improved_response: string
+          last_applied_at: string | null
+          original_bot_response: string
+          similarity_keywords: string[] | null
+          status: Database["public"]["Enums"]["feedback_status"]
+          times_applied: number | null
+          updated_at: string | null
+          user_message_context: string
+        }
+        Insert: {
+          bot_id?: string | null
+          conversation_context?: Json | null
+          conversation_message_id?: string | null
+          created_at?: string | null
+          created_by_user_id?: string | null
+          id?: string
+          improved_response: string
+          last_applied_at?: string | null
+          original_bot_response: string
+          similarity_keywords?: string[] | null
+          status?: Database["public"]["Enums"]["feedback_status"]
+          times_applied?: number | null
+          updated_at?: string | null
+          user_message_context: string
+        }
+        Update: {
+          bot_id?: string | null
+          conversation_context?: Json | null
+          conversation_message_id?: string | null
+          created_at?: string | null
+          created_by_user_id?: string | null
+          id?: string
+          improved_response?: string
+          last_applied_at?: string | null
+          original_bot_response?: string
+          similarity_keywords?: string[] | null
+          status?: Database["public"]["Enums"]["feedback_status"]
+          times_applied?: number | null
+          updated_at?: string | null
+          user_message_context?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_feedback_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_feedback_conversation_message_id_fkey"
+            columns: ["conversation_message_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -203,13 +351,56 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      message_feedback_with_context: {
+        Row: {
+          bot_id: string | null
+          conversation_context: Json | null
+          conversation_created_at: string | null
+          conversation_message_id: string | null
+          conversation_status: string | null
+          created_at: string | null
+          created_by_user_id: string | null
+          id: string | null
+          improved_response: string | null
+          last_applied_at: string | null
+          message_content: string | null
+          message_created_at: string | null
+          message_type: string | null
+          original_bot_response: string | null
+          phone_number: string | null
+          similarity_keywords: string[] | null
+          status: Database["public"]["Enums"]["feedback_status"] | null
+          times_applied: number | null
+          updated_at: string | null
+          user_message_context: string | null
+          user_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_feedback_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_feedback_conversation_message_id_fkey"
+            columns: ["conversation_message_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      extract_keywords_from_text: {
+        Args: { input_text: string }
+        Returns: string[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      feedback_status: "pending" | "applied" | "rejected" | "in_review"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -336,41 +527,70 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      feedback_status: ["pending", "applied", "rejected", "in_review"],
+    },
   },
 } as const
 
-// Tipos personalizados para o sistema de versionamento de prompts
-export type PromptType = 'principal' | 'triagem';
+// Additional types for the application
+export type MessageType = 'user' | 'bot';
+export type ConversationStatus = 'active' | 'archived' | 'blocked';
+export type FeedbackStatus = 'pending' | 'applied' | 'rejected' | 'in_review';
 
-export interface PromptVersion {
+export interface ConversationMessage {
+  id: string;
+  conversation_id: string;
+  message_type: MessageType;
+  content: string;
+  metadata?: Json;
+  created_at: string;
+}
+
+export interface ExternalConversation {
   id: string;
   bot_id: string;
-  user_id: string;
-  prompt_type: PromptType;
-  content: string;
-  version_number: number;
-  is_active: boolean;
-  description?: string;
+  user_name: string;
+  phone_number: string;
+  status: ConversationStatus;
+  external_id?: string;
+  metadata?: Json;
+  last_message_at?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface CreatePromptVersionRequest {
-  bot_id: string;
-  prompt_type: PromptType;
-  content: string;
-  description?: string;
-  is_active?: boolean;
+export interface ConversationWithMessages extends ExternalConversation {
+  messages: ConversationMessage[];
+  bot?: {
+    id: string;
+    name: string;
+  };
 }
 
-export interface PromptVersionSummary {
-  principal: {
-    active: PromptVersion | null;
-    versions: PromptVersion[];
-  };
-  triagem: {
-    active: PromptVersion | null;
-    versions: PromptVersion[];
-  };
+export interface MessageFeedback {
+  id: string;
+  conversation_message_id?: string;
+  bot_id?: string;
+  created_by_user_id?: string;
+  user_message_context: string;
+  original_bot_response: string;
+  improved_response: string;
+  status: FeedbackStatus;
+  similarity_keywords?: string[];
+  conversation_context?: Json;
+  times_applied?: number;
+  last_applied_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MessageFeedbackWithContext extends MessageFeedback {
+  message_content?: string;
+  message_created_at?: string;
+  user_name?: string;
+  phone_number?: string;
+  conversation_status?: string;
+  conversation_created_at?: string;
+  message_type?: string;
 }

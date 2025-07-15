@@ -6,6 +6,7 @@ Um dashboard elegante para gerenciar assistentes de IA com versionamento avança
 
 - **Dashboard de Assistentes**: Visualização e gerenciamento completo dos bots
 - **Sistema de Conversas**: Interface de chat para testar assistentes
+- **Conversas Externas**: Visualização e gerenciamento de conversas do WhatsApp/Telegram
 - **Base de Conhecimento**: Upload e gerenciamento de arquivos para treinar assistentes
 - **Versionamento de Prompts**: Sistema robusto para gerenciar diferentes versões de prompts
 
@@ -63,6 +64,7 @@ CREATE TABLE prompt_versions (
 
 - `PromptManager.tsx`: Gerenciamento completo do sistema de versionamento
 - `AssistantSettingsTab.tsx`: Interface integrada nas configurações
+- `AssistantConversationsTab.tsx`: Interface para visualizar conversas externas
 - `AssistantView.tsx`: Página principal do assistente
 
 ## 🔧 Como Usar
@@ -83,6 +85,42 @@ CREATE TABLE prompt_versions (
    - Confirme a ação no dialog de segurança
    - A versão será ativada automaticamente
 
+## 💬 Sistema de Conversas Externas
+
+### Integração com Plataformas
+
+O sistema suporta conversas de usuários externos através de:
+- **WhatsApp Business API**: Recebimento e envio de mensagens
+- **Telegram Bot**: Integração com bots do Telegram  
+- **APIs Customizadas**: Webhooks para outras plataformas
+
+### Estrutura do Banco
+
+```sql
+-- Conversas principais
+external_conversations: id, bot_id, user_name, phone_number, external_id, status
+
+-- Mensagens individuais  
+conversation_messages: id, conversation_id, message_type, content, metadata
+```
+
+### Interface de Gerenciamento
+
+- **📊 Dashboard**: Estatísticas de conversas ativas, arquivadas e bloqueadas
+- **🗂️ Lista Organizada**: Busca por nome/telefone, filtros por status
+- **💬 Visualizador**: Interface tipo chat com histórico completo
+- **⚙️ Ações**: Arquivar, bloquear, reativar conversas
+- **🔄 Tempo Real**: Atualizações automáticas via subscriptions
+
+### Fluxo de Integração
+
+1. **Webhook** recebe mensagem do WhatsApp/Telegram
+2. **Sistema** busca/cria conversa usando `external_id`
+3. **Mensagem** é salva na base de dados
+4. **IA** processa e gera resposta
+5. **Resposta** é enviada e salva
+6. **Interface** atualiza em tempo real
+
 ## 🛡️ Segurança e Integridade
 
 - **Row Level Security (RLS)**: Usuários só acessam seus próprios dados
@@ -101,7 +139,9 @@ CREATE TABLE prompt_versions (
 ## 📊 Tecnologias Utilizadas
 
 - **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Backend**: Supabase (PostgreSQL + Auth + Storage + Realtime)
 - **Componentes**: shadcn/ui
 - **Ícones**: Lucide React
 - **Estado**: React Hooks + Context API
+- **Integrações**: WhatsApp Business API, Telegram Bot API
+- **Tempo Real**: Supabase Subscriptions

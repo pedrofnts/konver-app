@@ -1,0 +1,640 @@
+{
+  "name": "Bot com Sistema de Feedback",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "74a42542-3f08-4f09-9a92-a1b5c6d4e5f6",
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [260, 300],
+      "webhookId": "auto-generated"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "userMessage",
+              "value": "={{ $node['Webhook WhatsApp'].json.message.text }}"
+            },
+            {
+              "name": "userPhone",
+              "value": "={{ $node['Webhook WhatsApp'].json.from }}"
+            },
+            {
+              "name": "userName",
+              "value": "={{ $node['Webhook WhatsApp'].json.profile?.name || 'Usuário' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a8c3d2e1-f4b5-6c7d-8e9f-0a1b2c3d4e5f",
+      "name": "Extrair Dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hporhdoioazpqaclqjjm.supabase.co/functions/v1/bot-feedback-api/best-response",
+        "sendQuery": false,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "x-bot-id",
+              "value": "{{ $env.BOT_ID }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "userMessage",
+              "value": "={{ $node['Extrair Dados'].json.userMessage }}"
+            },
+            {
+              "name": "threshold",
+              "value": "0.7"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b9d4e3f2-a5c6-7d8e-9f0a-1b2c3d4e5f6a",
+      "name": "Consultar Feedback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $node['Consultar Feedback'].json.found }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "c0e5f4a3-b6d7-8e9f-0a1b-2c3d4e5f6a7b",
+      "name": "Tem Resposta Melhorada?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [860, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "response",
+              "value": "={{ $node['Consultar Feedback'].json.improved_response }}"
+            },
+            {
+              "name": "source",
+              "value": "feedback"
+            },
+            {
+              "name": "feedback_id",
+              "value": "={{ $node['Consultar Feedback'].json.feedback_id }}"
+            },
+            {
+              "name": "confidence",
+              "value": "={{ $node['Consultar Feedback'].json.confidence }}"
+            }
+          ]
+        }
+      },
+      "id": "d1f6a5b4-c7e8-9f0a-1b2c-3d4e5f6a7b8c",
+      "name": "Usar Resposta Melhorada",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1060, 200]
+    },
+    {
+      "parameters": {
+        "model": "gpt-3.5-turbo",
+        "messages": {
+          "messageValues": [
+            {
+              "role": "system",
+              "message": "{{ $env.SYSTEM_PROMPT }}"
+            },
+            {
+              "role": "user",
+              "message": "={{ $node['Extrair Dados'].json.userMessage }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 500
+        }
+      },
+      "id": "e2a7b6c5-d8f9-0a1b-2c3d-4e5f6a7b8c9d",
+      "name": "Gerar Resposta OpenAI",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1060, 400]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "response",
+              "value": "={{ $node['Gerar Resposta OpenAI'].json.choices[0].message.content }}"
+            },
+            {
+              "name": "source",
+              "value": "openai"
+            }
+          ]
+        }
+      },
+      "id": "f3b8c7d6-e9a0-1b2c-3d4e-5f6a7b8c9d0e",
+      "name": "Definir Resposta OpenAI",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1260, 400]
+    },
+    {
+      "parameters": {},
+      "id": "a4c9d8e7-f0b1-2c3d-4e5f-6a7b8c9d0e1f",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [1460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hporhdoioazpqaclqjjm.supabase.co/rest/v1/external_conversations",
+        "sendQuery": false,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "bot_id",
+              "value": "{{ $env.BOT_ID }}"
+            },
+            {
+              "name": "user_name",
+              "value": "={{ $node['Extrair Dados'].json.userName }}"
+            },
+            {
+              "name": "phone_number",
+              "value": "={{ $node['Extrair Dados'].json.userPhone }}"
+            },
+            {
+              "name": "external_id",
+              "value": "whatsapp_{{ $node['Extrair Dados'].json.userPhone }}"
+            },
+            {
+              "name": "status",
+              "value": "active"
+            },
+            {
+              "name": "last_message_at",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b5d0e9f8-a1c2-3d4e-5f6a-7b8c9d0e1f2a",
+      "name": "Salvar/Atualizar Conversa",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1660, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hporhdoioazpqaclqjjm.supabase.co/rest/v1/conversation_messages",
+        "sendQuery": false,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "conversation_id",
+              "value": "={{ $node['Salvar/Atualizar Conversa'].json.id }}"
+            },
+            {
+              "name": "message_type",
+              "value": "user"
+            },
+            {
+              "name": "content",
+              "value": "={{ $node['Extrair Dados'].json.userMessage }}"
+            },
+            {
+              "name": "metadata",
+              "value": "{\"source\": \"whatsapp\", \"phone\": \"{{ $node['Extrair Dados'].json.userPhone }}\"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c6e1f0a9-b2d3-4e5f-6a7b-8c9d0e1f2a3b",
+      "name": "Salvar Mensagem do Usuário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1860, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://hporhdoioazpqaclqjjm.supabase.co/rest/v1/conversation_messages",
+        "sendQuery": false,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "{{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "conversation_id",
+              "value": "={{ $node['Salvar/Atualizar Conversa'].json.id }}"
+            },
+            {
+              "name": "message_type",
+              "value": "bot"
+            },
+            {
+              "name": "content",
+              "value": "={{ $node['Merge'].json.response }}"
+            },
+            {
+              "name": "metadata",
+              "value": "{\"source\": \"{{ $node['Merge'].json.source }}\", \"feedback_id\": \"{{ $node['Merge'].json.feedback_id || null }}\", \"confidence\": \"{{ $node['Merge'].json.confidence || null }}\"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d7f2a1b0-c3e4-5f6a-7b8c-9d0e1f2a3b4c",
+      "name": "Salvar Resposta do Bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [2060, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v17.0/{{ $env.WHATSAPP_PHONE_ID }}/messages",
+        "sendQuery": false,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.WHATSAPP_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "messaging_product",
+              "value": "whatsapp"
+            },
+            {
+              "name": "to",
+              "value": "={{ $node['Extrair Dados'].json.userPhone }}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            },
+            {
+              "name": "text",
+              "value": "{\"body\": \"{{ $node['Merge'].json.response }}\"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e8a3b2c1-d4f5-6a7b-8c9d-0e1f2a3b4c5d",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [2260, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"status\": \"success\", \"message_id\": \"{{ $node['Enviar WhatsApp'].json.messages[0].id }}\"}"
+      },
+      "id": "f9b4c3d2-e5a6-7b8c-9d0e-1f2a3b4c5d6e",
+      "name": "Resposta do Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $node['Merge'].json.source }}",
+              "value2": "feedback"
+            }
+          ]
+        }
+      },
+      "id": "a0b5c4d3-e6f7-8a9b-c0d1-e2f3a4b5c6d7",
+      "name": "Usou Feedback?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2060, 500]
+    },
+    {
+      "parameters": {
+        "url": "https://hporhdoioazpqaclqjjm.supabase.co/functions/v1/bot-feedback-api/apply-feedback",
+        "sendQuery": false,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "x-bot-id",
+              "value": "{{ $env.BOT_ID }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "feedbackId",
+              "value": "={{ $node['Merge'].json.feedback_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1c6d5e4-f7a8-9b0c-1d2e-3f4a5b6c7d8e",
+      "name": "Marcar Feedback Aplicado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [2260, 600]
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Extrair Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Dados": {
+      "main": [
+        [
+          {
+            "node": "Consultar Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Feedback": {
+      "main": [
+        [
+          {
+            "node": "Tem Resposta Melhorada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Resposta Melhorada?": {
+      "main": [
+        [
+          {
+            "node": "Usar Resposta Melhorada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gerar Resposta OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Usar Resposta Melhorada": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Resposta OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Definir Resposta OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Resposta OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Salvar/Atualizar Conversa",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Usou Feedback?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar/Atualizar Conversa": {
+      "main": [
+        [
+          {
+            "node": "Salvar Mensagem do Usuário",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salvar Resposta do Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Resposta do Bot": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Resposta do Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Usou Feedback?": {
+      "main": [
+        [
+          {
+            "node": "Marcar Feedback Aplicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-07-14T20:00:00.000Z",
+      "updatedAt": "2024-07-14T20:00:00.000Z",
+      "id": "1",
+      "name": "chatbot"
+    },
+    {
+      "createdAt": "2024-07-14T20:00:00.000Z",
+      "updatedAt": "2024-07-14T20:00:00.000Z",
+      "id": "2",
+      "name": "whatsapp"
+    },
+    {
+      "createdAt": "2024-07-14T20:00:00.000Z",
+      "updatedAt": "2024-07-14T20:00:00.000Z",
+      "id": "3",
+      "name": "feedback"
+    }
+  ],
+  "meta": {
+    "instanceId": "example"
+  }
+} 

@@ -19,7 +19,9 @@ import {
   Home,
   Play,
   Zap,
-  Brain
+  Brain,
+  MessageSquare,
+  Target
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +29,8 @@ import { useToast } from "@/hooks/use-toast";
 import AssistantTestTab from "@/components/AssistantTestTab";
 import AssistantSettingsTab from "@/components/AssistantSettingsTab";
 import AssistantKnowledgeTab from "@/components/AssistantKnowledgeTab";
+import AssistantConversationsTab from "@/components/AssistantConversationsTab";
+import BotFeedbackManagement from "@/components/BotFeedbackManagement";
 import FloatingPromptAssistant from "@/components/FloatingPromptAssistant";
 import { KnowledgeFile, AssistantData } from "@/types/assistant";
 import { PromptModificationRequest } from "@/components/PromptWizard";
@@ -404,13 +408,20 @@ export default function AssistantView() {
 
           {/* Tabs with colorful design */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-3 bg-white/90 backdrop-blur-sm border border-slate-200/60 rounded-2xl p-1 shadow-lg">
+            <TabsList className="grid w-full grid-cols-5 bg-white/90 backdrop-blur-sm border border-slate-200/60 rounded-2xl p-1 shadow-lg">
               <TabsTrigger 
                 value="test" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
               >
                 <Play className="w-4 h-4 mr-2" />
                 Conversar
+              </TabsTrigger>
+              <TabsTrigger 
+                value="conversations"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Conversas
               </TabsTrigger>
               <TabsTrigger 
                 value="settings"
@@ -426,6 +437,13 @@ export default function AssistantView() {
                 <Brain className="w-4 h-4 mr-2" />
                 Base de Conhecimento
               </TabsTrigger>
+              <TabsTrigger 
+                value="feedback"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Treinamento
+              </TabsTrigger>
             </TabsList>
 
             {/* Test Interface */}
@@ -435,6 +453,13 @@ export default function AssistantView() {
                 systemPrompt={systemPrompt}
                 temperature={temperature}
                 maxTokens={1000}
+              />
+            </TabsContent>
+
+            {/* Conversations */}
+            <TabsContent value="conversations">
+              <AssistantConversationsTab
+                botId={id || ''}
               />
             </TabsContent>
 
@@ -467,6 +492,14 @@ export default function AssistantView() {
             <TabsContent value="knowledge">
               <AssistantKnowledgeTab
                 botId={id || ''}
+              />
+            </TabsContent>
+
+            {/* Feedback Management */}
+            <TabsContent value="feedback">
+              <BotFeedbackManagement
+                botId={id || ''}
+                botName={assistant?.name || 'Bot'}
               />
             </TabsContent>
           </Tabs>
