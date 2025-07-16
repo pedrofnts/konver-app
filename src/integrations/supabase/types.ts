@@ -594,3 +594,38 @@ export interface MessageFeedbackWithContext extends MessageFeedback {
   conversation_created_at?: string;
   message_type?: string;
 }
+
+// Tipos para versionamento de prompts
+export type PromptType = 'principal' | 'triagem';
+
+export interface PromptVersion {
+  id: string;
+  bot_id: string;
+  user_id: string;
+  prompt_type: PromptType;
+  content: string;
+  version_number: number;
+  is_active: boolean;
+  description?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CreatePromptVersionRequest {
+  bot_id: string;
+  user_id: string;
+  prompt_type: PromptType;
+  content: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface PromptVersionsByType {
+  active: PromptVersion | null;
+  versions: PromptVersion[];
+}
+
+export interface PromptVersionSummary {
+  principal: PromptVersionsByType;
+  triagem: PromptVersionsByType;
+}
