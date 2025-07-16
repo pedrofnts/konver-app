@@ -101,8 +101,9 @@ export default function PromptManager({ botId, onPromptsUpdate }: PromptManagerP
     setSaving(true);
     
     try {
-      // Primeiro, criamos a nova versão como INATIVA para evitar violação do constraint único
-      const { data: newVersion, error: insertError } = await supabase
+      // Agora com o constraint correto, podemos inserir diretamente como ativa
+      // O trigger ensure_single_active_prompt vai desativar automaticamente as outras
+      const { error: insertError } = await supabase
         .from('prompt_versions')
         .insert({
           bot_id: botId,
@@ -110,35 +111,11 @@ export default function PromptManager({ botId, onPromptsUpdate }: PromptManagerP
           prompt_type: activePromptType,
           content: newPromptContent.trim(),
           description: newPromptDescription.trim() || undefined,
-          is_active: false, // Criar como inativa inicialmente
+          is_active: true, // O trigger vai gerenciar a unicidade
           version_number: 1 // Será substituído pelo trigger
-        })
-        .select()
-        .single();
+        });
 
       if (insertError) throw insertError;
-
-      // Agora desativamos a versão ativa atual do mesmo tipo
-      const { error: deactivateError } = await supabase
-        .from('prompt_versions')
-        .update({ is_active: false })
-        .eq('bot_id', botId)
-        .eq('user_id', user.id)
-        .eq('prompt_type', activePromptType)
-        .eq('is_active', true);
-
-      // Não vamos falhar se não houver versão ativa para desativar
-      if (deactivateError && deactivateError.code !== 'PGRST116') {
-        throw deactivateError;
-      }
-
-      // Por último, ativamos a nova versão criada
-      const { error: activateError } = await supabase
-        .from('prompt_versions')
-        .update({ is_active: true, updated_at: new Date().toISOString() })
-        .eq('id', newVersion.id);
-
-      if (activateError) throw activateError;
 
       toast({
         title: "Prompt criado",
