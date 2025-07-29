@@ -596,7 +596,7 @@ export interface MessageFeedbackWithContext extends MessageFeedback {
 }
 
 // Tipos para versionamento de prompts
-export type PromptType = 'principal' | 'triagem';
+export type PromptType = 'principal' | 'triagem' | 'think';
 
 export interface PromptVersion {
   id: string;
@@ -628,4 +628,5 @@ export interface PromptVersionsByType {
 export interface PromptVersionSummary {
   principal: PromptVersionsByType;
   triagem: PromptVersionsByType;
+  think: PromptVersionsByType;
 }
