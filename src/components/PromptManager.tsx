@@ -592,10 +592,10 @@ export default function PromptManager({ botId, onPromptsUpdate }: PromptManagerP
 
       {/* Dialog para preview completo do prompt */}
       <Dialog open={!!previewPrompt} onOpenChange={() => setPreviewPrompt(null)}>
-        <DialogContent className="max-w-5xl max-h-[90vh] w-[95vw]">
+        <DialogContent className="max-w-5xl max-h-[90vh] w-[95vw] flex flex-col">
           {previewPrompt && (
             <>
-              <DialogHeader>
+              <DialogHeader className="flex-shrink-0">
                 <DialogTitle className="flex items-center space-x-2 text-xl">
                   {previewPrompt.type === 'principal' ? <Zap className="w-6 h-6 text-blue-600" /> : 
                    previewPrompt.type === 'triagem' ? <Shield className="w-6 h-6 text-green-600" /> : 
@@ -614,8 +614,8 @@ export default function PromptManager({ botId, onPromptsUpdate }: PromptManagerP
                 </DialogTitle>
               </DialogHeader>
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
+              <div className="flex flex-col space-y-4 flex-1 min-h-0">
+                <div className="flex items-center justify-between text-sm text-slate-600 bg-slate-50 p-3 rounded-lg flex-shrink-0">
                   <div className="flex items-center space-x-4">
                     <span className="flex items-center">
                       <Calendar className="w-4 h-4 mr-1" />
@@ -634,13 +634,13 @@ export default function PromptManager({ botId, onPromptsUpdate }: PromptManagerP
                   </div>
                 </div>
                 
-                <ScrollArea className="max-h-[60vh] w-full">
-                  <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                <div className="flex-1 min-h-0 bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
+                  <ScrollArea className="h-full p-6">
                     <pre className="text-sm text-slate-700 whitespace-pre-wrap font-mono leading-relaxed">
                       {previewPrompt.version.content}
                     </pre>
-                  </div>
-                </ScrollArea>
+                  </ScrollArea>
+                </div>
               </div>
               
               <DialogFooter>
