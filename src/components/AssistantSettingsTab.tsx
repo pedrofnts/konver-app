@@ -54,29 +54,29 @@ export default function AssistantSettingsTab({
   saving
 }: AssistantSettingsTabProps) {
   return (
-    <div className="space-y-8">
-      <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-xl rounded-2xl">
+    <div className="space-y-8 konver-animate-in">
+      <div className="konver-card-feature">
         <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-3 text-xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 konver-gradient-primary rounded-xl flex items-center justify-center shadow-md konver-animate-float">
                 <Settings className="w-5 h-5 text-white" />
               </div>
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Configurações do Assistente
+              <span className="konver-text-gradient">
+                Assistant Settings
               </span>
             </CardTitle>
             <Button 
               onClick={saveSettings} 
               disabled={saving}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white h-11 px-6 rounded-xl shadow-lg"
+              className="konver-button-primary h-11 px-6 rounded-xl"
             >
               {saving ? (
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />
               )}
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? 'Saving...' : 'Save Settings'}
             </Button>
           </div>
         </CardHeader>
@@ -84,33 +84,33 @@ export default function AssistantSettingsTab({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>
-                <Label htmlFor="name" className="text-base font-medium text-slate-700">Nome do Assistente</Label>
+                <Label htmlFor="name" className="text-base font-medium text-foreground">Assistant Name</Label>
                 <Input
                   id="name"
                   value={assistantName}
                   onChange={(e) => setAssistantName(e.target.value)}
-                  placeholder="Nome do assistente"
-                  className="mt-2 h-12 rounded-xl border-slate-200/80 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20"
+                  placeholder="Enter assistant name"
+                  className="mt-2 h-12 rounded-xl konver-focus bg-background border-border"
                 />
               </div>
 
               <div>
-                <Label htmlFor="description" className="text-base font-medium text-slate-700">Descrição</Label>
+                <Label htmlFor="description" className="text-base font-medium text-foreground">Description</Label>
                 <Textarea
                   id="description"
                   value={assistantDescription}
                   onChange={(e) => setAssistantDescription(e.target.value)}
-                  placeholder="Descreva o propósito do assistente"
+                  placeholder="Describe the assistant's purpose and capabilities"
                   rows={3}
-                  className="mt-2 rounded-xl border-slate-200/80 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20"
+                  className="mt-2 rounded-xl konver-focus bg-background border-border"
                 />
               </div>
             </div>
 
             <div className="space-y-6">
               <div>
-                <Label htmlFor="temperature" className="text-base font-medium text-slate-700">
-                  Temperatura: {temperature[0]}
+                <Label htmlFor="temperature" className="text-base font-medium text-foreground">
+                  Temperature: {temperature[0]}
                 </Label>
                 <Slider
                   id="temperature"
@@ -121,13 +121,13 @@ export default function AssistantSettingsTab({
                   step={0.1}
                   className="mt-3"
                 />
-                <p className="text-sm text-slate-500 mt-2">
-                  Controla a criatividade das respostas (0 = mais conservador, 2 = mais criativo)
+                <p className="text-sm text-muted-foreground mt-2">
+                  Controls response creativity (0 = conservative, 2 = creative)
                 </p>
               </div>
 
-              <div className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-                <Label htmlFor="status" className="text-base font-medium text-purple-700">Status do Assistente</Label>
+              <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 border border-border">
+                <Label htmlFor="status" className="text-base font-medium text-foreground">Assistant Status</Label>
                 <Switch
                   id="status"
                   checked={assistantStatus === 'Ativo'}
@@ -137,11 +137,11 @@ export default function AssistantSettingsTab({
             </div>
           </div>
 
-          <Separator className="bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+          <Separator className="bg-gradient-to-r from-transparent via-border to-transparent" />
 
           {/* Sistema de Prompts Versionado */}
           <div>
-            <Label className="text-base font-medium text-slate-700 mb-4 block">Sistema de Prompts</Label>
+            <Label className="text-base font-medium text-foreground mb-4 block">Prompt Management System</Label>
             <PromptManager 
               botId={botId}
               onPromptsUpdate={(prompts: PromptVersionSummary) => {
@@ -149,12 +149,12 @@ export default function AssistantSettingsTab({
                 console.log('Prompts updated:', prompts);
               }}
             />
-            <p className="text-sm text-slate-500 mt-3">
-              Gerencie diferentes versões dos prompts principal e de triagem do seu assistente
+            <p className="text-sm text-muted-foreground mt-3">
+              Manage different versions of your assistant's primary and triage prompts
             </p>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Seção "Persona do Assistente" - Comentada temporariamente */}
       {/* 

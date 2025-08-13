@@ -215,7 +215,7 @@ export default function AssistantKnowledgeTab({
         );
       case 'ready':
         return (
-          <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
+          <Badge variant="default" className="flex items-center gap-1 konver-status-success">
             <CheckCircle className="w-3 h-3" />
             Pronto
           </Badge>
@@ -234,67 +234,70 @@ export default function AssistantKnowledgeTab({
 
   if (loading) {
     return (
-      <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-xl rounded-2xl">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center space-x-3 text-xl">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
-              <Database className="w-5 h-5 text-white" />
+      <div className="konver-animate-in">
+        <div className="konver-card-feature">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center space-x-3 text-xl">
+              <div className="w-10 h-10 konver-gradient-primary rounded-xl flex items-center justify-center shadow-md konver-animate-float">
+                <Database className="w-5 h-5 text-white" />
+              </div>
+              <span className="konver-text-gradient">
+                Knowledge Base
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              Base de Conhecimento
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-xl rounded-2xl">
-      <CardHeader className="pb-6">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-3 text-xl">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
-              <Database className="w-5 h-5 text-white" />
-            </div>
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              Base de Conhecimento
-            </span>
-          </CardTitle>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept=".txt,.pdf,.json,.md,.xlsx,.csv"
-            className="hidden"
-            disabled={isUploading}
-          />
-          <Button 
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white h-11 px-6 rounded-xl shadow-lg"
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4 mr-2" />
-                Fazer Upload
-              </>
-            )}
-          </Button>
-        </div>
+    <div className="konver-animate-in">
+      <div className="konver-card-feature">
+        <CardHeader className="pb-6">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center space-x-3 text-xl">
+              <div className="w-10 h-10 konver-gradient-primary rounded-xl flex items-center justify-center shadow-md konver-animate-float">
+                <Database className="w-5 h-5 text-white" />
+              </div>
+              <span className="konver-text-gradient">
+                Knowledge Base
+              </span>
+            </CardTitle>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept=".txt,.pdf,.json,.md,.xlsx,.csv"
+              className="hidden"
+              disabled={isUploading}
+            />
+            <Button 
+              onClick={() => fileInputRef.current?.click()}
+              className="konver-button-primary h-11 px-6 rounded-xl"
+              disabled={isUploading}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload File
+                </>
+              )}
+            </Button>
+          </div>
         {isUploading && (
           <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-sm text-slate-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>{currentOperation}</span>
               <span>{uploadProgress}%</span>
             </div>
@@ -305,29 +308,29 @@ export default function AssistantKnowledgeTab({
       <CardContent>
         {knowledgeFiles.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <div className="w-20 h-20 konver-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl konver-animate-float">
               <FileText className="w-10 h-10 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-3">Nenhum arquivo carregado</h3>
-            <p className="text-slate-600 mb-8 max-w-md mx-auto">
-              Faça upload de documentos para que o assistente tenha acesso a informações específicas. 
-              Suporta arquivos .txt, .pdf, .json, .md, .xlsx e .csv.
-              Os arquivos serão processados automaticamente pelo N8N.
+            <h3 className="text-2xl font-bold text-foreground mb-3">No files uploaded</h3>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
+              Upload documents to give your assistant access to specific information. 
+              Supports .txt, .pdf, .json, .md, .xlsx and .csv files.
+              Files will be automatically processed by N8N.
             </p>
             <Button 
               onClick={() => fileInputRef.current?.click()}
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white h-12 px-8 rounded-xl shadow-lg"
+              className="konver-button-primary h-12 px-8 rounded-xl"
               disabled={isUploading}
             >
               {isUploading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Enviando...
+                  Uploading...
                 </>
               ) : (
                 <>
                   <Upload className="w-5 h-5 mr-2" />
-                  Fazer Primeiro Upload
+                  Upload First File
                 </>
               )}
             </Button>
@@ -335,46 +338,49 @@ export default function AssistantKnowledgeTab({
         ) : (
           <div className="space-y-4">
             {knowledgeFiles.map((file) => (
-              <div key={file.id} className="flex items-center justify-between p-5 border border-slate-200/60 rounded-xl bg-gradient-to-r from-slate-50/50 to-emerald-50/30 hover:shadow-md transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800 text-base">{file.file_name}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-sm text-slate-500">
-                        {file.file_type.toUpperCase()} • {file.file_size}
-                      </p>
-                      {getStatusBadge(file.status)}
+              <div key={file.id} className="konver-card-interactive p-5 border border-border rounded-xl bg-gradient-to-r from-background/50 to-muted/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 konver-gradient-primary rounded-xl flex items-center justify-center shadow-md">
+                      <FileText className="w-6 h-6 text-white" />
                     </div>
-                    {file.chunks_count > 0 && (
-                      <p className="text-xs text-slate-400 mt-1">
-                        {file.chunks_count} seções processadas
-                      </p>
-                    )}
+                    <div>
+                      <p className="font-semibold text-foreground text-base">{file.file_name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm text-muted-foreground">
+                          {file.file_type.toUpperCase()} • {file.file_size}
+                        </p>
+                        {getStatusBadge(file.status)}
+                      </div>
+                      {file.chunks_count > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {file.chunks_count} sections processed
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleRemoveFile(file)} 
-                    className="h-10 w-10 rounded-xl hover:bg-red-100"
-                    disabled={isRemoving === file.id}
-                  >
-                    {isRemoving === file.id ? (
-                      <Loader2 className="w-4 h-4 text-red-500 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    )}
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleRemoveFile(file)} 
+                      className="h-10 w-10 rounded-xl konver-hover-subtle hover:bg-destructive/10"
+                      disabled={isRemoving === file.id}
+                    >
+                      {isRemoving === file.id ? (
+                        <Loader2 className="w-4 h-4 text-destructive animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </CardContent>
-    </Card>
-  );
+    </div>
+  </div>
+);
 } 

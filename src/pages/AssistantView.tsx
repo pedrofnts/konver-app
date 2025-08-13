@@ -1,38 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { 
-  ArrowLeft, 
-  Bot,
-  Settings,
-  Bell,
-  Search,
-  User,
-  LogOut,
-  Home,
-  Play,
-  Zap,
-  Brain,
-  MessageSquare,
-  Target
-} from "lucide-react";
+import { ArrowLeft, Bot, Home, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import KonverLayout from "@/components/KonverLayout";
+import AssistantSidebar from "@/components/AssistantSidebar";
 import AssistantTestTab from "@/components/AssistantTestTab";
 import AssistantSettingsTab from "@/components/AssistantSettingsTab";
 import AssistantKnowledgeTab from "@/components/AssistantKnowledgeTab";
 import AssistantConversationsTab from "@/components/AssistantConversationsTab";
 import BotFeedbackManagement from "@/components/BotFeedbackManagement";
 import FloatingPromptAssistant from "@/components/FloatingPromptAssistant";
-import { KnowledgeFile, AssistantData } from "@/types/assistant";
+import { AssistantData } from "@/types/assistant";
 import { PromptModificationRequest } from "@/components/PromptWizard";
 
 export default function AssistantView() {
@@ -45,6 +26,7 @@ export default function AssistantView() {
   const [assistant, setAssistant] = useState<AssistantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Settings states
   const [assistantName, setAssistantName] = useState('');
@@ -207,304 +189,247 @@ export default function AssistantView() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-        {/* Header Skeleton */}
-        <header className="h-20 border-b border-slate-200/60 bg-white/95 backdrop-blur-xl flex items-center justify-between px-8 shadow-sm sticky top-0 z-50">
-          <div className="flex items-center gap-6">
-            <Skeleton className="h-12 w-12 rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-        </header>
-        
-        {/* Content Skeleton */}
-        <main className="p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-10 w-10 rounded-lg" />
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-4 w-48" />
+      <KonverLayout 
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Loading...' }
+        ]}
+        actions={
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="konver-hover-subtle"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        }
+      >
+        <div className="flex min-h-[calc(100vh-12rem)]">
+          {/* Loading Sidebar */}
+          <div className="w-80 bg-card/30 border-r border-border/50 p-6">
+            <div className="space-y-4">
+              <div className="h-32 bg-muted rounded-2xl animate-pulse" />
+              <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+                ))}
               </div>
             </div>
-            <Card>
-              <CardContent className="p-6">
-                <Skeleton className="h-64 w-full" />
-              </CardContent>
-            </Card>
           </div>
-        </main>
-      </div>
+          
+          {/* Loading Content */}
+          <div className="flex-1 p-8">
+            <div className="konver-card max-w-4xl">
+              <div className="h-64 w-full bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </KonverLayout>
     );
   }
 
   if (!assistant) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-        {/* Header */}
-        <header className="h-20 border-b border-slate-200/60 bg-white/95 backdrop-blur-xl flex items-center justify-between px-8 shadow-sm sticky top-0 z-50">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl flex items-center justify-center shadow-lg">
-                <Bot className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                  Bella Dash
-                </h1>
-                <p className="text-sm text-slate-500 font-medium">Assistente não encontrado</p>
-              </div>
-            </div>
+      <KonverLayout 
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Assistant Not Found' }
+        ]}
+        actions={
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="konver-hover-subtle"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        }
+      >
+        <div className="konver-card-feature max-w-2xl mx-auto text-center p-12 mt-16">
+          <div className="w-20 h-20 konver-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl konver-animate-float">
+            <Bot className="w-10 h-10 text-white" />
           </div>
+          <h2 className="text-2xl font-bold text-foreground mb-3">Assistant Not Found</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
+            The requested assistant was not found or you don't have permission to access it.
+          </p>
+          <Button 
+            onClick={() => navigate('/')}
+            className="konver-button-primary"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+      </KonverLayout>
+    );
+  }
+
+  const renderActiveTabContent = () => {
+    switch (activeTab) {
+      case 'test':
+        return (
+          <AssistantTestTab
+            assistant={assistant}
+            systemPrompt={systemPrompt}
+            temperature={temperature}
+            maxTokens={1000}
+          />
+        );
+      case 'conversations':
+        return <AssistantConversationsTab botId={id || ''} />;
+      case 'settings':
+        return (
+          <AssistantSettingsTab
+            botId={id || ''}
+            assistantName={assistantName}
+            setAssistantName={setAssistantName}
+            assistantDescription={assistantDescription}
+            setAssistantDescription={setAssistantDescription}
+            temperature={temperature}
+            setTemperature={setTemperature}
+            assistantStatus={assistantStatus}
+            setAssistantStatus={setAssistantStatus}
+            personaObjective={personaObjective}
+            setPersonaObjective={setPersonaObjective}
+            personaPersonality={personaPersonality}  
+            setPersonaPersonality={setPersonaPersonality}
+            personaStyle={personaStyle}
+            setPersonaStyle={setPersonaStyle}
+            personaTargetAudience={personaTargetAudience}
+            setPersonaTargetAudience={setPersonaTargetAudience}
+            saveSettings={saveSettings}
+            saving={saving}
+          />
+        );
+      case 'knowledge':
+        return <AssistantKnowledgeTab botId={id || ''} />;
+      case 'feedback':
+        return (
+          <BotFeedbackManagement
+            botId={id || ''}
+            botName={assistant?.name || 'Bot'}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <KonverLayout 
+      assistant={assistant}
+      breadcrumbs={[
+        { label: 'Dashboard', href: '/' },
+        { label: assistant.name }
+      ]}
+      actions={
+        <div className="flex items-center gap-2">
+          {/* Mobile sidebar toggle */}
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden konver-hover-subtle"
+          >
+            <Menu className="w-4 h-4" />
+          </Button>
           
           <Button 
             variant="ghost" 
             onClick={() => navigate('/')}
-            className="h-11 px-4 rounded-xl hover:bg-slate-100"
+            className="konver-hover-subtle"
           >
-            <Home className="w-5 h-5 mr-2" />
-            Voltar
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
           </Button>
-        </header>
-
-        {/* Error Content */}
-        <main className="p-8">
-          <div className="max-w-7xl mx-auto">
-            <Card className="bg-white/80 backdrop-blur-sm border-slate-200/60 shadow-lg">
-              <CardContent className="p-12 text-center">
-                <Bot className="w-20 h-20 text-slate-400 mx-auto mb-6" />
-                <h2 className="text-2xl font-bold text-slate-800 mb-3">Assistente não encontrado</h2>
-                <p className="text-slate-600 mb-8 max-w-md mx-auto">
-                  O assistente solicitado não foi encontrado ou você não tem permissão para acessá-lo.
-                </p>
-                <Button 
-                  onClick={() => navigate('/')}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-12 px-8 rounded-xl shadow-lg"
-                >
-                  <Home className="w-5 h-5 mr-2" />
-                  Voltar para Home
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      {/* Header */}
-      <header className="h-20 border-b border-slate-200/60 bg-white/95 backdrop-blur-xl flex items-center justify-between px-8 shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-6">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/')}
-            className="h-11 px-4 rounded-xl border-slate-200/80 hover:bg-slate-50"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Voltar
-          </Button>
-          
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl flex items-center justify-center shadow-lg">
-              <Bot className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                Bella Dash
-              </h1>
-              <p className="text-sm text-slate-500 font-medium">
-                Configurações do Assistente
-              </p>
-            </div>
-          </div>
         </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="relative hidden lg:block">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-            <Input 
-              placeholder="Buscar na conversa..." 
-              className="pl-12 w-80 h-11 bg-white/80 border-slate-200/80 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 rounded-xl"
-            />
-          </div>
-          
-          <Button variant="outline" size="default" className="relative hover:bg-slate-50 rounded-xl border-slate-200/80 h-11 px-4">
-            <Bell className="w-5 h-5" />
-            <Badge variant="destructive" className="absolute -top-2 -right-2 w-6 h-6 p-0 text-xs rounded-full">
-              3
-            </Badge>
-          </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-11 w-11 rounded-xl hover:bg-slate-100">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src="/placeholder.svg" alt="Avatar" />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
-                    {user?.email?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 p-2" align="end">
-              <div className="px-3 py-2">
-                <p className="text-sm font-medium text-slate-800">{user?.email?.split('@')[0] || 'Usuário'}</p>
-                <p className="text-xs text-slate-500">{user?.email}</p>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                Perfil
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                Configurações
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => signOut()}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      }
+    >
+      <div className="flex min-h-[calc(100vh-12rem)] bg-gradient-to-br from-background via-background/95 to-card/10 relative">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"></div>
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--border)) 1px, transparent 0)`,
+            backgroundSize: '32px 32px'
+          }}></div>
         </div>
-      </header>
 
-      {/* Main Content */}  
-      <main className="p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Assistant Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-xl">
-                <span className="text-white font-bold text-2xl">
-                  {assistant.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-slate-800 mb-1">{assistant.name}</h2>
-                <p className="text-lg text-slate-600">{assistant.description || 'Assistente de IA personalizado'}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge 
-                    variant={assistant.status === 'Ativo' ? 'default' : 'secondary'}
-                    className={assistant.status === 'Ativo' 
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' 
-                      : ''
-                    }
-                  >
-                    {assistant.status}
-                  </Badge>
-                  <div className="text-sm text-slate-500">
-                    {assistant.conversations} conversas • {assistant.performance}% performance
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Modern Sidebar Navigation */}
+        <div className={`relative z-50 md:z-10 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-out`}>
+          <AssistantSidebar 
+            activeTab={activeTab} 
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              setSidebarOpen(false); // Close sidebar on mobile when tab changes
+            }}
+            assistant={{
+              conversations: assistant.conversations,
+              performance: assistant.performance,
+              status: assistant.status
+            }}
+          />
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 konver-content-area relative z-10 min-w-0">
+          <div className="relative">
+            {/* Content Container */}
+            <div className="p-4 sm:p-6 lg:p-8 xl:p-10 konver-scrollbar max-h-[calc(100vh-12rem)] overflow-y-auto">
+              <div className="max-w-6xl mx-auto">
+                {/* Content Header */}
+                <div className="mb-6 lg:mb-8 konver-animate-slide-right">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-1.5 sm:w-2 h-6 sm:h-8 rounded-full flex-shrink-0 ${
+                        activeTab === 'test' ? 'bg-violet-500' :
+                        activeTab === 'conversations' ? 'bg-emerald-500' :
+                        activeTab === 'settings' ? 'bg-blue-500' :
+                        activeTab === 'knowledge' ? 'bg-amber-500' :
+                        'bg-rose-500'
+                      }`} />
+                      <div className="min-w-0">
+                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
+                          {activeTab === 'test' && 'Test Chat'}
+                          {activeTab === 'conversations' && 'Conversations'}
+                          {activeTab === 'settings' && 'Configuration'}
+                          {activeTab === 'knowledge' && 'Knowledge Base'}
+                          {activeTab === 'feedback' && 'Training & Feedback'}
+                        </h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                          {activeTab === 'test' && 'Test your assistant with live conversations and see real-time responses'}
+                          {activeTab === 'conversations' && 'View chat history, analytics, and conversation insights'}
+                          {activeTab === 'settings' && 'Manage assistant settings, prompts, and persona configuration'}
+                          {activeTab === 'knowledge' && 'Upload and organize knowledge sources for your assistant'}
+                          {activeTab === 'feedback' && 'Improve responses through feedback and training data'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="konver-animate-fade-in">
+                  <div className="relative">
+                    {renderActiveTabContent()}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Tabs with colorful design */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-5 bg-white/90 backdrop-blur-sm border border-slate-200/60 rounded-2xl p-1 shadow-lg">
-              <TabsTrigger 
-                value="test" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Conversar
-              </TabsTrigger>
-              <TabsTrigger 
-                value="conversations"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Conversas
-              </TabsTrigger>
-              <TabsTrigger 
-                value="settings"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Configurações
-              </TabsTrigger>
-              <TabsTrigger 
-                value="knowledge"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
-              >
-                <Brain className="w-4 h-4 mr-2" />
-                Base de Conhecimento
-              </TabsTrigger>
-              <TabsTrigger 
-                value="feedback"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
-              >
-                <Target className="w-4 h-4 mr-2" />
-                Treinamento
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Test Interface */}
-            <TabsContent value="test">
-              <AssistantTestTab
-                assistant={assistant}
-                systemPrompt={systemPrompt}
-                temperature={temperature}
-                maxTokens={1000}
-              />
-            </TabsContent>
-
-            {/* Conversations */}
-            <TabsContent value="conversations">
-              <AssistantConversationsTab
-                botId={id || ''}
-              />
-            </TabsContent>
-
-            {/* Settings */}
-            <TabsContent value="settings">
-              <AssistantSettingsTab
-                botId={id || ''}
-                assistantName={assistantName}
-                setAssistantName={setAssistantName}
-                assistantDescription={assistantDescription}
-                setAssistantDescription={setAssistantDescription}
-                temperature={temperature}
-                setTemperature={setTemperature}
-                assistantStatus={assistantStatus}
-                setAssistantStatus={setAssistantStatus}
-                personaObjective={personaObjective}
-                setPersonaObjective={setPersonaObjective}
-                personaPersonality={personaPersonality}  
-                setPersonaPersonality={setPersonaPersonality}
-                personaStyle={personaStyle}
-                setPersonaStyle={setPersonaStyle}
-                personaTargetAudience={personaTargetAudience}
-                setPersonaTargetAudience={setPersonaTargetAudience}
-                saveSettings={saveSettings}
-                saving={saving}
-              />
-            </TabsContent>
-
-            {/* Knowledge Base */}
-            <TabsContent value="knowledge">
-              <AssistantKnowledgeTab
-                botId={id || ''}
-              />
-            </TabsContent>
-
-            {/* Feedback Management */}
-            <TabsContent value="feedback">
-              <BotFeedbackManagement
-                botId={id || ''}
-                botName={assistant?.name || 'Bot'}
-              />
-            </TabsContent>
-          </Tabs>
         </div>
-      </main>
+      </div>
 
       {/* Floating Prompt Assistant */}
       {assistant && (
@@ -514,6 +439,6 @@ export default function AssistantView() {
           assistantName="Assistente de Prompts"
         />
       )}
-    </div>
+    </KonverLayout>
   );
 } 

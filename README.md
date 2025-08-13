@@ -1,39 +1,40 @@
-# Elegant AI Dashboard
+# Konver - AI Assistant Platform
 
-Um dashboard elegante para gerenciar assistentes de IA com versionamento avançado de prompts.
+A professional, minimalist platform for creating and managing AI assistants with advanced conversation capabilities and prompt versioning.
 
-## 🚀 Funcionalidades Principais
+## 🚀 Key Features
 
-- **Dashboard de Assistentes**: Visualização e gerenciamento completo dos bots
-- **Sistema de Conversas**: Interface de chat para testar assistentes
-- **Conversas Externas**: Visualização e gerenciamento de conversas do WhatsApp/Telegram
-- **Base de Conhecimento**: Upload e gerenciamento de arquivos para treinar assistentes
-- **Versionamento de Prompts**: Sistema robusto para gerenciar diferentes versões de prompts
+- **Assistant Dashboard**: Complete AI assistant management and visualization
+- **Conversation System**: Real-time chat interface for testing assistants
+- **External Conversations**: WhatsApp/Telegram integration and management
+- **Knowledge Base**: File upload and management for assistant training
+- **Advanced Prompt Versioning**: Robust system for managing different prompt versions
 
-## 📝 Sistema de Versionamento de Prompts
+## 📝 Prompt Versioning System
 
-### Tipos de Prompt
+### Prompt Types
 
-1. **Prompt Principal**: Comportamento principal do assistente
-2. **Prompt de Triagem**: Lógica inicial para classificar e direcionar conversas
+1. **Principal**: Main assistant behavior and personality
+2. **Triagem**: Initial conversation triage and routing logic
+3. **Think**: Reasoning and analytical prompts
 
-### Funcionalidades do Versionamento
+### Versioning Features
 
-- ✅ **Criação de Versões**: Crie novas versões com descrições
-- ✅ **Ativação/Desativação**: Apenas uma versão ativa por tipo
-- ✅ **Histórico Completo**: Visualize todas as versões anteriores
-- ✅ **Restauração**: Restaure qualquer versão anterior
-- ✅ **Auto-incremento**: Numeração automática das versões
+- ✅ **Version Creation**: Create new versions with descriptions
+- ✅ **Activation/Deactivation**: Only one active version per type
+- ✅ **Complete History**: View all previous versions
+- ✅ **Restoration**: Restore any previous version
+- ✅ **Auto-increment**: Automatic version numbering
 
-### Estrutura do Banco de Dados
+### Database Structure
 
 ```sql
--- Tabela principal para versionamento
+-- Main table for versioning
 CREATE TABLE prompt_versions (
   id UUID PRIMARY KEY,
   bot_id UUID REFERENCES bots(id),
   user_id UUID REFERENCES auth.users(id),
-  prompt_type TEXT CHECK (prompt_type IN ('principal', 'triagem')),
+  prompt_type TEXT CHECK (prompt_type IN ('principal', 'triagem', 'think')),
   content TEXT NOT NULL,
   version_number INTEGER NOT NULL,
   is_active BOOLEAN DEFAULT false,
@@ -41,107 +42,136 @@ CREATE TABLE prompt_versions (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
-  -- Garantir apenas uma versão ativa por tipo
+  -- Ensure only one active version per type
   UNIQUE(bot_id, prompt_type, is_active) DEFERRABLE
 );
 ```
 
-### Triggers Automáticos
+### Automatic Triggers
 
-- **Auto-incremento de versão**: Calcula automaticamente o próximo número
-- **Versão única ativa**: Desativa automaticamente versões anteriores
+- **Auto-increment version**: Automatically calculates next version number
+- **Unique active version**: Automatically deactivates previous versions
 
-## 🎨 Interface do Usuário
+## 🎨 Design System
 
-### Configurações do Assistente
+### Konver Theme
 
-- **Cards Visuais**: Interface moderna com gradientes e ícones
-- **Histórico Expandível**: Visualize versões anteriores em modal
-- **Criação Rápida**: Dialog intuitivo para novas versões
-- **Confirmação de Restauração**: Proteção contra alterações acidentais
+- **Dark-first Design**: Professional dark theme with elegant colors
+- **Minimalist Interface**: Clean, distraction-free design
+- **Consistent Components**: Reusable design system components
+- **Accessibility**: WCAG compliant with proper contrast ratios
 
-### Componentes Principais
+### Color Palette
 
-- `PromptManager.tsx`: Gerenciamento completo do sistema de versionamento
-- `AssistantSettingsTab.tsx`: Interface integrada nas configurações
-- `AssistantConversationsTab.tsx`: Interface para visualizar conversas externas
-- `AssistantView.tsx`: Página principal do assistente
+- **Primary**: `#5b7cf7` - Elegant blue for primary actions
+- **Accent**: `#33ccff` - Konver brand accent color
+- **Background**: `#0f0f12` - Deep dark background
+- **Surface**: `#141419` - Card and surface backgrounds
+- **Border**: `#242429` - Subtle borders and dividers
 
-## 🔧 Como Usar
+### Typography
 
-1. **Criar Nova Versão**:
-   - Clique no botão "Nova" no card do tipo de prompt desejado
-   - Adicione uma descrição (opcional)
-   - Digite o conteúdo do prompt
-   - Clique em "Criar e Ativar"
+- **Primary Font**: Inter - Clean, modern sans-serif
+- **Mono Font**: JetBrains Mono - For code and technical content
 
-2. **Ver Histórico**:
-   - Clique em "Ver Histórico" para expandir versões anteriores
-   - Visualize conteúdo completo de cada versão
-   - Veja timestamps e descrições
+## 🔧 How to Use
 
-3. **Restaurar Versão**:
-   - No histórico, clique em "Restaurar" na versão desejada
-   - Confirme a ação no dialog de segurança
-   - A versão será ativada automaticamente
+1. **Create New Version**:
+   - Click "New" button on desired prompt type card
+   - Add optional description
+   - Enter prompt content
+   - Click "Create and Activate"
 
-## 💬 Sistema de Conversas Externas
+2. **View History**:
+   - Click "View History" to expand previous versions
+   - View complete content of each version
+   - See timestamps and descriptions
 
-### Integração com Plataformas
+3. **Restore Version**:
+   - In history, click "Restore" on desired version
+   - Confirm action in security dialog
+   - Version will be automatically activated
 
-O sistema suporta conversas de usuários externos através de:
-- **WhatsApp Business API**: Recebimento e envio de mensagens
-- **Telegram Bot**: Integração com bots do Telegram  
-- **APIs Customizadas**: Webhooks para outras plataformas
+## 💬 External Conversations System
 
-### Estrutura do Banco
+### Platform Integration
+
+The system supports external user conversations through:
+- **WhatsApp Business API**: Message receiving and sending
+- **Telegram Bot**: Bot integration
+- **Custom APIs**: Webhooks for other platforms
+
+### Database Structure
 
 ```sql
--- Conversas principais
+-- Main conversations
 external_conversations: id, bot_id, user_name, phone_number, external_id, status
 
--- Mensagens individuais  
+-- Individual messages  
 conversation_messages: id, conversation_id, message_type, content, metadata
 ```
 
-### Interface de Gerenciamento
+### Management Interface
 
-- **📊 Dashboard**: Estatísticas de conversas ativas, arquivadas e bloqueadas
-- **🗂️ Lista Organizada**: Busca por nome/telefone, filtros por status
-- **💬 Visualizador**: Interface tipo chat com histórico completo
-- **⚙️ Ações**: Arquivar, bloquear, reativar conversas
-- **🔄 Tempo Real**: Atualizações automáticas via subscriptions
+- **📊 Dashboard**: Statistics for active, archived, and blocked conversations
+- **🗂️ Organized List**: Search by name/phone, status filters
+- **💬 Viewer**: Chat-like interface with complete history
+- **⚙️ Actions**: Archive, block, reactivate conversations
+- **🔄 Real-time**: Automatic updates via subscriptions
 
-### Fluxo de Integração
+### Integration Flow
 
-1. **Webhook** recebe mensagem do WhatsApp/Telegram
-2. **Sistema** busca/cria conversa usando `external_id`
-3. **Mensagem** é salva na base de dados
-4. **IA** processa e gera resposta
-5. **Resposta** é enviada e salva
-6. **Interface** atualiza em tempo real
+1. **Webhook** receives message from WhatsApp/Telegram
+2. **System** finds/creates conversation using `external_id`
+3. **Message** is saved to database
+4. **AI** processes and generates response
+5. **Response** is sent and saved
+6. **Interface** updates in real-time
 
-## 🛡️ Segurança e Integridade
+## 🛡️ Security and Integrity
 
-- **Row Level Security (RLS)**: Usuários só acessam seus próprios dados
-- **Validação de Tipos**: Enum restrito para tipos de prompt
-- **Constraints de Unicidade**: Previne estados inconsistentes
-- **Soft Deletion**: Histórico preservado permanentemente
+- **Row Level Security (RLS)**: Users only access their own data
+- **Type Validation**: Restricted enum for prompt types
+- **Uniqueness Constraints**: Prevents inconsistent states
+- **Soft Deletion**: History preserved permanently
 
-## 🎯 Benefícios do Sistema
+## 🎯 System Benefits
 
-1. **Controle Total**: Gerencie múltiplas versões sem perder histórico
-2. **Rollback Seguro**: Volte a qualquer versão anterior rapidamente
-3. **Experimentação**: Teste diferentes abordagens sem risco
-4. **Auditoria**: Rastreie mudanças com timestamps e descrições
-5. **Escalabilidade**: Suporte a novos tipos de prompt facilmente
+1. **Complete Control**: Manage multiple versions without losing history
+2. **Safe Rollback**: Return to any previous version quickly
+3. **Experimentation**: Test different approaches without risk
+4. **Audit Trail**: Track changes with timestamps and descriptions
+5. **Scalability**: Easy support for new prompt types
 
-## 📊 Tecnologias Utilizadas
+## 📊 Technologies Used
 
 - **Frontend**: React + TypeScript + Tailwind CSS
 - **Backend**: Supabase (PostgreSQL + Auth + Storage + Realtime)
-- **Componentes**: shadcn/ui
-- **Ícones**: Lucide React
-- **Estado**: React Hooks + Context API
-- **Integrações**: WhatsApp Business API, Telegram Bot API
-- **Tempo Real**: Supabase Subscriptions
+- **Components**: shadcn/ui with custom Konver design system
+- **Icons**: Lucide React
+- **State**: React Hooks + Context API + React Query
+- **Integrations**: WhatsApp Business API, Telegram Bot API
+- **Real-time**: Supabase Subscriptions
+
+## 🚀 Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linting
+npm run lint
+```
+
+## 📱 Development
+
+- Development server runs on `http://localhost:8080`
+- TypeScript strict mode with custom configurations
+- ESLint for code quality
+- Vite for fast development and building

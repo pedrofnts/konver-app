@@ -1,384 +1,331 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Bot, Settings, MessageSquare, MoreVertical, Power, Pause, Plus, Activity, TrendingUp, Eye, Play, Calendar } from "lucide-react"
-import { supabase } from "@/integrations/supabase/client"
-import { useAuth } from "@/hooks/useAuth"
-import { useToast } from "@/hooks/use-toast"
-import { Skeleton } from "@/components/ui/skeleton"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Bot, 
+  Settings, 
+  MessageSquare, 
+  MoreVertical, 
+  Power, 
+  Pause, 
+  Plus, 
+  Activity, 
+  TrendingUp, 
+  Eye, 
+  Play, 
+  Calendar 
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import KonverCard from "@/components/KonverCard";
 
 type BotData = {
-  id: string
-  name: string
-  description: string | null
-  status: string
-  conversations: number
-  performance: number
-  created_at: string
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  conversations: number;
+  performance: number;
+  created_at: string;
+};
+
+interface BotsListProps {
+  searchQuery?: string;
 }
 
-export default function BotsList() {
-  const [bots, setBots] = useState<BotData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const navigate = useNavigate()
+export default function BotsList({ searchQuery = '' }: BotsListProps) {
+  const [bots, setBots] = useState<BotData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      fetchBots()
+      fetchBots();
     }
-  }, [user])
+  }, [user]);
 
   const fetchBots = async () => {
     try {
-      if (!user) return
+      if (!user) return;
       
       const { data, error } = await supabase
         .from('bots')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
 
-      if (error) throw error
-      setBots(data || [])
+      if (error) throw error;
+      setBots(data || []);
     } catch (error) {
-      console.error('Error fetching bots:', error)
+      console.error('Error fetching bots:', error);
       toast({
-        title: "Erro ao carregar assistentes",
-        description: "Não foi possível carregar a lista de assistentes.",
+        title: "Error",
+        description: "Failed to fetch assistants",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  const createSampleBot = async () => {
-    if (!user) return
-
-    try {
-      const { error } = await supabase
-        .from('bots')
-        .insert({
-          user_id: user.id,
-          name: "Assistente de Exemplo",
-          description: "Um assistente de IA inteligente para começar",
-          status: "Ativo",
-          conversations: 0,
-          performance: 92.0
-        })
-
-      if (error) throw error
-
-      toast({
-        title: "✨ Assistente criado!",
-        description: "Seu primeiro assistente foi criado com sucesso.",
-      })
-
-      fetchBots()
-    } catch (error) {
-      console.error('Error creating bot:', error)
-      toast({
-        title: "Erro ao criar assistente",
-        description: "Não foi possível criar o assistente.",
-        variant: "destructive",
-      })
-    }
-  }
+  };
 
   const toggleBotStatus = async (botId: string, currentStatus: string) => {
-    if (!user) return
-    
-    setUpdatingStatus(botId)
-    const newStatus = currentStatus === 'Ativo' ? 'Inativo' : 'Ativo'
+    setUpdatingStatus(botId);
     
     try {
+      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      
       const { error } = await supabase
         .from('bots')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', botId)
-        .eq('user_id', user.id)
+        .update({ status: newStatus })
+        .eq('id', botId);
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error;
 
-      setBots(bots.map(bot => 
+      setBots(prev => prev.map(bot => 
         bot.id === botId ? { ...bot, status: newStatus } : bot
-      ))
+      ));
 
       toast({
-        title: "Status atualizado",
-        description: `Assistente ${newStatus.toLowerCase()} com sucesso.`,
-      })
+        title: "Success",
+        description: `Assistant ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`,
+      });
     } catch (error) {
-      console.error('Error updating bot status:', error)
+      console.error('Error updating bot status:', error);
       toast({
-        title: "Erro ao atualizar status",
-        description: "Não foi possível atualizar o status do assistente.",
+        title: "Error",
+        description: "Failed to update assistant status",
         variant: "destructive",
-      })
+      });
     } finally {
-      setUpdatingStatus(null)
+      setUpdatingStatus(null);
     }
-  }
+  };
 
-  const getStatusColor = (status: string) => {
-    return status === 'Ativo' 
-      ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
-      : 'bg-slate-100 text-slate-600 border-slate-200'
-  }
-
-  const getPerformanceColor = (performance: number) => {
-    if (performance >= 90) return 'text-emerald-600'
-    if (performance >= 70) return 'text-blue-600'
-    return 'text-red-600'
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
+  const filteredBots = bots.filter(bot =>
+    bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    bot.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-lg">
-        <CardHeader className="pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-slate-800 text-xl font-bold">Seus Assistentes IA</CardTitle>
-              <CardDescription className="text-slate-600 mt-1">
-                Carregando seus assistentes...
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="p-6 rounded-xl border border-slate-200/50 space-y-4">
-              <div className="flex items-center space-x-4">
-                <Skeleton className="h-12 w-12 rounded-xl" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <KonverCard key={i}>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-6 w-6 rounded-full" />
+                <Skeleton className="h-5 w-3/4" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-48" />
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-6 w-12" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-6 w-16" />
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <Skeleton className="h-16 rounded-lg" />
-                <Skeleton className="h-16 rounded-lg" />
-                <Skeleton className="h-16 rounded-lg" />
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4 w-24" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8 rounded" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                </div>
               </div>
             </div>
-          ))}
-        </CardContent>
-      </Card>
-    )
+          </KonverCard>
+        ))}
+      </div>
+    );
   }
 
-  if (bots.length === 0) {
+  if (filteredBots.length === 0) {
     return (
-      <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-lg">
-        <CardHeader className="pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-slate-800 text-xl font-bold">Seus Assistentes IA</CardTitle>
-              <CardDescription className="text-slate-600 mt-1">
-                Você ainda não tem assistentes configurados
-              </CardDescription>
-            </div>
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary shadow-lg mb-6">
+          <Bot className="h-10 w-10 text-white" />
+        </div>
+        <h3 className="text-2xl font-semibold mb-3 text-foreground">
+          {searchQuery ? 'No assistants found' : 'Ready to create your first assistant?'}
+        </h3>
+        <p className="text-base text-muted-foreground/90 mb-8 max-w-md leading-relaxed">
+          {searchQuery 
+            ? `No assistants match "${searchQuery}". Try a different search term or create a new assistant.`
+            : 'Transform your workflow with intelligent AI assistants. Create powerful conversational experiences in minutes.'
+          }
+        </p>
+        <div className="flex gap-3">
+          {!searchQuery && (
             <Button 
-              onClick={createSampleBot}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => navigate('/assistant/new')}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Criar Primeiro Assistente
+              <Plus className="h-5 w-5 mr-2" />
+              Create Your First Assistant
             </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Bot className="w-10 h-10 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-2">Nenhum assistente encontrado</h3>
-            <p className="text-slate-500 mb-6 max-w-md mx-auto">
-              Comece criando seu primeiro assistente de IA para automatizar tarefas e interações.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    )
+          )}
+          {searchQuery && (
+            <Button 
+              onClick={() => navigate('/assistant/new')}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Assistant
+            </Button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-lg">
-      <CardHeader className="pb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-slate-800 text-xl font-bold">Seus Assistentes IA</CardTitle>
-            <CardDescription className="text-slate-600 mt-1">
-              {bots.length} assistente{bots.length !== 1 ? 's' : ''} configurado{bots.length !== 1 ? 's' : ''}
-            </CardDescription>
-          </div>
-          <Button 
-            onClick={createSampleBot}
-            variant="outline"
-            className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Assistente
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {bots.map((bot) => (
-          <div key={bot.id} className="group relative p-6 rounded-xl border border-slate-200/50 bg-gradient-to-br from-white/50 to-slate-50/30 hover:shadow-lg transition-all duration-300 hover:border-slate-300/60">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">
-                    {bot.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-800 text-lg mb-1">
-                    {bot.name}
-                  </h3>
-                  <p className="text-slate-600 text-sm mb-2">
-                    {bot.description || 'Sem descrição'}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <Calendar className="w-3 h-3" />
-                    Criado em {formatDate(bot.created_at)}
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {filteredBots.map((bot, index) => (
+        <KonverCard
+          key={bot.id}
+          title={bot.name}
+          description={bot.description || "No description provided"}
+          status={bot.status}
+          hover
+          onClick={() => navigate(`/assistant/${bot.id}`)}
+          className="group"
+          style={{ animationDelay: `${index * 100}ms` }}
+        >
+          <div className="space-y-5">
+            {/* Enhanced Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2 group/stat">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-md bg-primary/10 group-hover/stat:bg-primary/20 transition-colors">
+                    <MessageSquare className="h-4 w-4 text-primary" />
                   </div>
+                  <span className="text-sm font-medium text-muted-foreground">Conversations</span>
+                </div>
+                <p className="text-xl font-bold text-foreground transition-all duration-300">
+                  {bot.conversations.toLocaleString()}
+                </p>
+              </div>
+              
+              <div className="space-y-2 group/stat">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-md bg-accent/10 group-hover/stat:bg-accent/20 transition-colors">
+                    <TrendingUp className="h-4 w-4 text-accent" />
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">Performance</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold text-foreground transition-all duration-300">
+                    {bot.performance}%
+                  </p>
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    bot.performance >= 95 ? "bg-green-500 animate-pulse" :
+                    bot.performance >= 80 ? "bg-yellow-500" : "bg-red-500"
+                  )}></div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge 
-                  variant="outline" 
-                  className={`${getStatusColor(bot.status)} font-medium px-3 py-1 rounded-full`}
+            </div>
+
+            {/* Enhanced Actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <div className="p-1 rounded-md bg-muted/30">
+                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                </div>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Created {new Date(bot.created_at).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/assistant/${bot.id}?tab=test`);
+                  }}
+                  className="h-8 w-8 p-0 hover:bg-accent/10"
                 >
-                  <div className={`w-2 h-2 rounded-full mr-2 ${
-                    bot.status === 'Ativo' ? 'bg-emerald-500' : 'bg-slate-400'
-                  }`}></div>
-                  {bot.status}
-                </Badge>
+                  <Play className="h-4 w-4 text-muted-foreground group-hover/play:text-accent transition-colors" />
+                </Button>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-8 w-8 p-0 hover:bg-accent/10"
+                    >
+                      <MoreVertical className="h-4 w-4 text-muted-foreground group-hover/menu:text-primary transition-colors" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => navigate(`/assistant/${bot.id}`)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Visualizar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate(`/assistant/${bot.id}?tab=settings`)}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Configurações
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => toggleBotStatus(bot.id, bot.status)}
-                      disabled={updatingStatus === bot.id}
+                  
+                  <DropdownMenuContent align="end" className="bg-card border border-border shadow-lg">
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/assistant/${bot.id}?tab=settings`);
+                      }}
+                      className="hover:bg-accent/10 cursor-pointer"
                     >
-                      {bot.status === 'Ativo' ? (
-                        <Pause className="mr-2 h-4 w-4" />
+                      <Settings className="mr-3 h-4 w-4 text-primary" />
+                      <span className="font-medium">Settings</span>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/assistant/${bot.id}?tab=conversations`);
+                      }}
+                      className="hover:bg-accent/10 cursor-pointer"
+                    >
+                      <Eye className="mr-3 h-4 w-4 text-accent" />
+                      <span className="font-medium">View Conversations</span>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBotStatus(bot.id, bot.status);
+                      }}
+                      disabled={updatingStatus === bot.id}
+                      className="hover:bg-accent/10 cursor-pointer"
+                    >
+                      {bot.status === 'active' ? (
+                        <>
+                          <Pause className="mr-3 h-4 w-4 text-warning" />
+                          <span className="font-medium">Deactivate</span>
+                        </>
                       ) : (
-                        <Play className="mr-2 h-4 w-4" />
+                        <>
+                          <Power className="mr-3 h-4 w-4 text-success" />
+                          <span className="font-medium">Activate</span>
+                        </>
                       )}
-                      {bot.status === 'Ativo' ? 'Pausar' : 'Ativar'}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-white/60 rounded-lg p-4 border border-slate-200/40">
-                <div className="flex items-center gap-2 text-slate-600 text-sm font-medium mb-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Conversas
-                </div>
-                <div className="text-2xl font-bold text-slate-800">{bot.conversations}</div>
-              </div>
-              <div className="bg-white/60 rounded-lg p-4 border border-slate-200/40">
-                <div className="flex items-center gap-2 text-slate-600 text-sm font-medium mb-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Performance
-                </div>
-                <div className={`text-2xl font-bold ${getPerformanceColor(bot.performance)}`}>
-                  {bot.performance}%
-                </div>
-              </div>
-              <div className="bg-white/60 rounded-lg p-4 border border-slate-200/40">
-                <div className="flex items-center gap-2 text-slate-600 text-sm font-medium mb-2">
-                  <Activity className="w-4 h-4" />
-                  Status
-                </div>
-                <div className={`text-sm font-semibold ${
-                  bot.status === 'Ativo' ? 'text-emerald-600' : 'text-slate-500'
-                }`}>
-                  {bot.status === 'Ativo' ? 'Online' : 'Offline'}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                size="sm"
-                onClick={() => navigate(`/assistant/${bot.id}`)}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Abrir
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/assistant/${bot.id}?tab=settings`)}
-                className="bg-white/80 hover:bg-slate-50 border-slate-200 text-slate-700 hover:text-slate-800 rounded-lg"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Configurar
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => toggleBotStatus(bot.id, bot.status)}
-                disabled={updatingStatus === bot.id}
-                className={`rounded-lg ${
-                  bot.status === 'Ativo' 
-                    ? 'bg-red-50 hover:bg-red-100 border-red-200 text-red-700 hover:text-red-800' 
-                    : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 hover:text-emerald-800'
-                }`}
-              >
-                {updatingStatus === bot.id ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                ) : bot.status === 'Ativo' ? (
-                  <Pause className="w-4 h-4 mr-2" />
-                ) : (
-                  <Play className="w-4 h-4 mr-2" />
-                )}
-                {bot.status === 'Ativo' ? 'Pausar' : 'Ativar'}
-              </Button>
-            </div>
           </div>
-        ))}
-      </CardContent>
-    </Card>
-  )
+        </KonverCard>
+      ))}
+    </div>
+  );
 }

@@ -176,16 +176,16 @@ export default function AssistantTestTab({
   };
 
   return (
-    <div>
-      <Card className="w-full bg-white/90 backdrop-blur-sm border-slate-200/60 shadow-xl rounded-2xl">
-        <CardHeader className="pb-4">
+    <div className="konver-animate-in">
+      <div className="konver-card-feature">
+        <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-3 text-xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 konver-gradient-primary rounded-xl flex items-center justify-center shadow-md konver-animate-float">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                Conversa
+              <span className="konver-text-gradient">
+                Test Assistant
               </span>
             </CardTitle>
             
@@ -196,10 +196,10 @@ export default function AssistantTestTab({
                   onClick={() => setShowPromptSettings(!showPromptSettings)}
                   variant="outline"
                   size="sm"
-                  className={showPromptSettings ? "bg-slate-100" : ""}
+                  className={`konver-hover-subtle ${showPromptSettings ? "bg-muted" : ""}`}
                 >
                   <Settings className="w-4 h-4 mr-2" />
-                  Versões
+                  Versions
                 </Button>
               )}
               
@@ -208,9 +208,10 @@ export default function AssistantTestTab({
                 variant="outline"
                 size="sm"
                 disabled={messages.length === 0}
+                className="konver-hover-subtle"
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Limpar Chat
+                Clear Chat
               </Button>
             </div>
           </div>
@@ -219,17 +220,17 @@ export default function AssistantTestTab({
           {showPromptSettings && (
             <>
               {loadingPrompts && (
-                <div className="flex items-center gap-2 mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="w-4 h-4 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
-                  <span className="text-sm text-slate-600">Carregando versões dos prompts...</span>
+                <div className="flex items-center gap-2 mt-4 p-3 bg-muted/50 rounded-lg border border-border">
+                  <div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" />
+                  <span className="text-sm text-muted-foreground">Carregando versões dos prompts...</span>
                 </div>
               )}
               
               {!loadingPrompts && (promptVersions.principal.versions.length > 0 || promptVersions.triagem.versions.length > 0 || promptVersions.think.versions.length > 0) && (
-                <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
+                <div className="mt-4 p-4 konver-card-secondary space-y-4">
                   <div className="flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-slate-600" />
-                    <span className="text-sm font-medium text-slate-700">Configurações de Versões</span>
+                    <Settings className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">Configurações de Versões</span>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -237,25 +238,25 @@ export default function AssistantTestTab({
                     {promptVersions.principal.versions.length > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-medium text-slate-700">Prompt Principal</span>
+                          <Zap className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium text-foreground">Prompt Principal</span>
                         </div>
                         <Select value={selectedPrincipalId || ''} onValueChange={setSelectedPrincipalId}>
-                          <SelectTrigger className="w-full h-10">
+                          <SelectTrigger className="w-full h-10 konver-focus">
                             <SelectValue placeholder="Selecione uma versão" />
                           </SelectTrigger>
-                          <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                          <SelectContent className="konver-glass border border-border/50 shadow-xl">
                             {promptVersions.principal.versions.map((version) => (
-                              <SelectItem key={version.id} value={version.id} className="hover:bg-slate-50">
+                              <SelectItem key={version.id} value={version.id} className="konver-hover-subtle">
                                 <div className="flex items-center justify-between w-full">
                                   <span className="mr-2">v{version.version_number}</span>
                                   {version.is_active && (
-                                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                    <Badge variant="outline" className="text-xs px-2 py-0.5 konver-status-success">
                                       Ativo
                                     </Badge>
                                   )}
                                   {version.description && (
-                                    <span className="text-xs text-slate-500 ml-2 truncate max-w-32">
+                                    <span className="text-xs text-muted-foreground ml-2 truncate max-w-32">
                                       {version.description}
                                     </span>
                                   )}
@@ -271,25 +272,25 @@ export default function AssistantTestTab({
                     {promptVersions.triagem.versions.length > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-medium text-slate-700">Prompt de Triagem</span>
+                          <Shield className="w-4 h-4 text-accent" />
+                          <span className="text-sm font-medium text-foreground">Prompt de Triagem</span>
                         </div>
                         <Select value={selectedTriagemId || ''} onValueChange={setSelectedTriagemId}>
-                          <SelectTrigger className="w-full h-10">
+                          <SelectTrigger className="w-full h-10 konver-focus">
                             <SelectValue placeholder="Selecione uma versão" />
                           </SelectTrigger>
-                          <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                          <SelectContent className="konver-glass border border-border/50 shadow-xl">
                             {promptVersions.triagem.versions.map((version) => (
-                              <SelectItem key={version.id} value={version.id} className="hover:bg-slate-50">
+                              <SelectItem key={version.id} value={version.id} className="konver-hover-subtle">
                                 <div className="flex items-center justify-between w-full">
                                   <span className="mr-2">v{version.version_number}</span>
                                   {version.is_active && (
-                                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                    <Badge variant="outline" className="text-xs px-2 py-0.5 konver-status-success">
                                       Ativo
                                     </Badge>
                                   )}
                                   {version.description && (
-                                    <span className="text-xs text-slate-500 ml-2 truncate max-w-32">
+                                    <span className="text-xs text-muted-foreground ml-2 truncate max-w-32">
                                       {version.description}
                                     </span>
                                   )}
@@ -305,25 +306,25 @@ export default function AssistantTestTab({
                     {promptVersions.think.versions.length > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Brain className="w-4 h-4 text-purple-600" />
-                          <span className="text-sm font-medium text-slate-700">Prompt de Pensamento</span>
+                          <Brain className="w-4 h-4 text-secondary-foreground" />
+                          <span className="text-sm font-medium text-foreground">Prompt de Pensamento</span>
                         </div>
                         <Select value={selectedThinkId || ''} onValueChange={setSelectedThinkId}>
-                          <SelectTrigger className="w-full h-10">
+                          <SelectTrigger className="w-full h-10 konver-focus">
                             <SelectValue placeholder="Selecione uma versão" />
                           </SelectTrigger>
-                          <SelectContent className="bg-white border border-slate-200 shadow-lg">
+                          <SelectContent className="konver-glass border border-border/50 shadow-xl">
                             {promptVersions.think.versions.map((version) => (
-                              <SelectItem key={version.id} value={version.id} className="hover:bg-slate-50">
+                              <SelectItem key={version.id} value={version.id} className="konver-hover-subtle">
                                 <div className="flex items-center justify-between w-full">
                                   <span className="mr-2">v{version.version_number}</span>
                                   {version.is_active && (
-                                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                    <Badge variant="outline" className="text-xs px-2 py-0.5 konver-status-success">
                                       Ativo
                                     </Badge>
                                   )}
                                   {version.description && (
-                                    <span className="text-xs text-slate-500 ml-2 truncate max-w-32">
+                                    <span className="text-xs text-muted-foreground ml-2 truncate max-w-32">
                                       {version.description}
                                     </span>
                                   )}
@@ -336,7 +337,7 @@ export default function AssistantTestTab({
                     )}
                   </div>
                   
-                  <div className="text-xs text-slate-500 bg-blue-50 p-2 rounded border border-blue-200">
+                  <div className="text-xs text-muted-foreground konver-card-info p-3 rounded-lg">
                     💡 Altere as versões dos prompts para testar diferentes comportamentos do assistente
                   </div>
                 </div>
@@ -351,27 +352,27 @@ export default function AssistantTestTab({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <ScrollArea className="h-[600px] border border-slate-200/60 rounded-xl p-6 bg-gradient-to-br from-slate-50/50 to-blue-50/30">
+          <ScrollArea className="h-[600px] border border-border rounded-xl p-6 bg-gradient-to-br from-background/50 to-muted/30 konver-scrollbar">
             {messages.length === 0 ? (
-              <div className="text-center text-slate-500 py-12">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <div className="text-center text-muted-foreground py-12">
+                <div className="w-16 h-16 konver-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl konver-animate-float">
                   <Bot className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-lg font-medium mb-2">Inicie uma conversa</p>
-                <p className="text-sm">Teste seu assistente enviando uma mensagem</p>
+                <p className="text-lg font-medium mb-2 text-foreground">Start a conversation</p>
+                <p className="text-sm">Test your assistant by sending a message</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-md px-5 py-3 rounded-2xl shadow-md ${
+                    <div className={`max-w-xs lg:max-w-md px-5 py-3 rounded-2xl shadow-sm ${
                       message.sender === 'user' 
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' 
-                        : 'bg-white border border-slate-200/80 shadow-lg'
+                        ? 'konver-gradient-primary text-white' 
+                        : 'bg-card border border-border konver-hover-subtle'
                     }`}>
                       <p className="text-sm leading-relaxed">{message.content}</p>
                       <p className={`text-xs mt-2 ${
-                        message.sender === 'user' ? 'text-blue-100' : 'text-slate-500'
+                        message.sender === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                       }`}>
                         {message.timestamp.toLocaleTimeString()}
                       </p>
@@ -380,11 +381,11 @@ export default function AssistantTestTab({
                 ))}
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="bg-white border border-slate-200/80 shadow-lg px-5 py-3 rounded-2xl">
+                    <div className="bg-card border border-border shadow-sm px-5 py-3 rounded-2xl">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -395,22 +396,22 @@ export default function AssistantTestTab({
           
           <div className="flex space-x-3">
             <Input
-              placeholder="Digite sua mensagem..."
+              placeholder="Type your message..."
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              className="flex-1 h-12 rounded-xl border-slate-200/80 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+              className="flex-1 h-12 rounded-xl konver-focus bg-background border-border"
             />
             <Button 
               onClick={sendMessage} 
               disabled={!newMessage.trim() || isTyping}
-              className="h-12 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl shadow-lg"
+              className="h-12 px-6 konver-button-primary rounded-xl"
             >
               <Send className="w-4 h-4" />
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 } 

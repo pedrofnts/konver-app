@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,51 +6,830 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Konver Balanced Theme - Modern & Warm */
+    --background: 220 14% 96%;         /* #f7f8fb - Soft light background */
+    --foreground: 220 18% 16%;         /* #252834 - Rich dark text */
     
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 220 20% 99%;               /* #fdfeff - Pure white cards */
+    --card-foreground: 220 18% 16%;    /* #252834 - Rich dark text */
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 220 20% 99%;            /* #fdfeff - Pure white popover */
+    --popover-foreground: 220 18% 16%; /* #252834 - Rich dark text */
     
-    --primary: 214 100% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 220 91% 58%;            /* #4267f5 - Vibrant blue */
+    --primary-foreground: 220 20% 99%; /* #fdfeff - White text on primary */
     
-    --secondary: 12 100% 65%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 16% 94%;          /* #eff1f6 - Light gray */
+    --secondary-foreground: 220 18% 16%; /* #252834 - Dark text on secondary */
     
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 16% 92%;              /* #eaecf2 - Muted background */
+    --muted-foreground: 220 12% 45%;   /* #6b7280 - Muted text */
     
-    --accent: 199 100% 50%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 190 95% 48%;             /* #0ea5e9 - Cyan accent */
+    --accent-foreground: 220 20% 99%;  /* #fdfeff - White text on accent */
     
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 36%;            /* #16a34a - Success green */
+    --success-foreground: 220 20% 99%; /* #fdfeff - White text on success */
+    
+    --warning: 38 92% 50%;             /* #f59e0b - Warning orange */
+    --warning-foreground: 220 20% 99%; /* #fdfeff - White text on warning */
+    
+    --destructive: 0 84% 60%;          /* #ef4444 - Error red */
+    --destructive-foreground: 220 20% 99%; /* #fdfeff - White text on destructive */
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 214 100% 60%;
+    --border: 220 16% 88%;             /* #dee2ea - Soft border */
+    --input: 220 16% 88%;              /* #dee2ea - Input border */
+    --ring: 220 91% 58%;               /* #4267f5 - Focus ring */
 
-    --radius: 0.75rem;
+    /* Enhanced design tokens */
+    --surface-elevation-1: 220 20% 98%; /* #fafbfc - Elevated surface */
+    --surface-elevation-2: 220 18% 97%; /* #f5f6f9 - Higher elevation */
+    --surface-elevation-3: 220 16% 95%; /* #f0f2f7 - Highest elevation */
+    
+    --gradient-primary: linear-gradient(135deg, hsl(220 91% 58%) 0%, hsl(250 84% 64%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(190 95% 48%) 0%, hsl(220 91% 58%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 95% 53%) 100%);
+    --gradient-surface: linear-gradient(135deg, hsl(220 20% 99%) 0%, hsl(220 18% 97%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220 91% 58%) 0%, hsl(190 95% 48%) 50%, hsl(250 84% 64%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(122 70% 42%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(32 95% 44%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsla(220, 20%, 99%, 0.8) 0%, hsla(220, 18%, 97%, 0.9) 100%);
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    --shadow-glow: 0 0 20px rgb(66 103 245 / 0.15);
+    --shadow-accent-glow: 0 0 20px rgb(14 165 233 / 0.15);
+    
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+  }
+
+  .dark {
+    /* Dark theme for future use */
+    --background: 220 15% 8%;          /* #121318 - Deep dark background */
+    --foreground: 220 14% 92%;         /* #e8eaef - Light text */
+    
+    --card: 220 16% 12%;               /* #1a1d26 - Dark cards */
+    --card-foreground: 220 14% 92%;    /* #e8eaef - Light text */
+    
+    --popover: 220 16% 12%;            /* #1a1d26 - Dark popover */
+    --popover-foreground: 220 14% 92%; /* #e8eaef - Light text */
+    
+    --primary: 220 91% 62%;            /* #4b6ef7 - Bright blue */
+    --primary-foreground: 220 16% 12%; /* #1a1d26 - Dark text on primary */
+    
+    --secondary: 220 16% 18%;          /* #262933 - Dark secondary */
+    --secondary-foreground: 220 14% 85%; /* #d1d4dc - Light text on secondary */
+    
+    --muted: 220 16% 15%;              /* #1f2229 - Dark muted */
+    --muted-foreground: 220 12% 65%;   /* #9ca3af - Muted text */
+    
+    --accent: 190 95% 52%;             /* #0ea5e9 - Bright cyan */
+    --accent-foreground: 220 16% 12%;  /* #1a1d26 - Dark text on accent */
+    
+    --destructive: 0 84% 64%;          /* #f56565 - Bright red */
+    --destructive-foreground: 220 16% 12%; /* #1a1d26 - Dark text on destructive */
+
+    --border: 220 16% 22%;             /* #2d3139 - Dark border */
+    --input: 220 16% 22%;              /* #2d3139 - Dark input border */
+    --ring: 220 91% 62%;               /* #4b6ef7 - Bright focus ring */
+
+    /* Enhanced dark tokens */
+    --surface-elevation-1: 220 16% 14%; /* #1c1f28 - Elevated surface */
+    --surface-elevation-2: 220 16% 16%; /* #20242e - Higher elevation */
+    --surface-elevation-3: 220 16% 18%; /* #262933 - Highest elevation */
+    
+    --gradient-surface: linear-gradient(135deg, hsl(220 16% 12%) 0%, hsl(220 16% 16%) 100%);
   }
 }
 
 @layer base {
   * {
-    @apply border-[hsl(var(--border))];
+    @apply border-border;
   }
+  
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+  }
+  
+  /* Typography hierarchy */
+  h1 {
+    @apply text-3xl lg:text-4xl font-bold tracking-tight;
+    line-height: 1.2;
+  }
+  
+  h2 {
+    @apply text-2xl lg:text-3xl font-semibold tracking-tight;
+    line-height: 1.3;
+  }
+  
+  h3 {
+    @apply text-xl lg:text-2xl font-semibold tracking-tight;
+    line-height: 1.4;
+  }
+  
+  h4 {
+    @apply text-lg lg:text-xl font-medium tracking-tight;
+    line-height: 1.4;
+  }
+  
+  h5 {
+    @apply text-base lg:text-lg font-medium;
+    line-height: 1.5;
+  }
+  
+  h6 {
+    @apply text-sm lg:text-base font-medium;
+    line-height: 1.5;
+  }
+  
+  /* Focus states */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Selection styles */
+  ::selection {
+    @apply bg-primary/20 text-primary-foreground;
   }
 }
 
-.glass-card {
-  @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm;
-}
-
-.animate-in {
-  animation: fade-in 0.3s ease-out forwards;
+@layer components {
+  /* Enhanced Konver Design System Components */
+  
+  /* Surface Components */
+  .konver-glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(16px) saturate(120%);
+    border: 1px solid hsl(var(--border)/0.3);
+    box-shadow: var(--shadow-lg), inset 0 1px 0 0 hsla(255, 255%, 255%, 0.1);
+  }
+  
+  .konver-surface {
+    @apply bg-card border border-border;
+    background: var(--gradient-surface);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  
+  .konver-surface::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsla(255, 255%, 255%, 0.2), transparent);
+  }
+  
+  .konver-surface-elevated {
+    background: hsl(var(--surface-elevation-1));
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-md);
+    position: relative;
+  }
+  
+  .konver-surface-floating {
+    background: hsl(var(--surface-elevation-2));
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  
+  .konver-surface-hero {
+    background: var(--gradient-hero);
+    border: 1px solid hsl(var(--border)/0.3);
+    box-shadow: var(--shadow-glow), var(--shadow-xl);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .konver-surface-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, hsla(255, 255%, 255%, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: drift 20s linear infinite;
+    opacity: 0.3;
+  }
+  
+  @keyframes drift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-20px, -20px); }
+  }
+  
+  /* Interactive States */
+  .konver-hover {
+    @apply transition-all duration-300 ease-out;
+    transform: translateY(0) scale(1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-hover:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border-color: hsl(var(--primary)/0.3);
+  }
+  
+  .konver-hover-subtle {
+    @apply transition-all duration-200 ease-out;
+    transform: translateY(0);
+  }
+  
+  .konver-hover-subtle:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    background-color: hsl(var(--surface-elevation-1));
+  }
+  
+  .konver-focus {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200;
+  }
+  
+  .konver-glow {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .konver-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(255, 255%, 255%, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .konver-glow:hover::before {
+    left: 100%;
+  }
+  
+  /* Gradient Components */
+  .konver-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .konver-gradient-accent {
+    background: var(--gradient-accent);
+  }
+  
+  .konver-gradient-warm {
+    background: var(--gradient-warm);
+  }
+  
+  .konver-text-gradient {
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  /* Button Components */
+  .konver-button-primary {
+    @apply text-white font-medium relative overflow-hidden;
+    @apply transition-all duration-300 ease-out shadow-md hover:shadow-xl;
+    @apply focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+    background: var(--gradient-primary);
+    transform: translateY(0);
+  }
+  
+  .konver-button-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow), var(--shadow-xl);
+  }
+  
+  .konver-button-primary:active {
+    transform: translateY(0);
+  }
+  
+  .konver-button-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/90;
+    @apply transition-all duration-300 ease-out shadow-sm hover:shadow-md border border-border;
+    @apply focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2;
+    transform: translateY(0);
+  }
+  
+  .konver-button-secondary:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary)/0.3);
+  }
+  
+  .konver-button-accent {
+    background: var(--gradient-accent);
+    @apply text-white font-medium relative overflow-hidden;
+    @apply transition-all duration-300 ease-out shadow-md hover:shadow-xl;
+    @apply focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2;
+    transform: translateY(0);
+  }
+  
+  .konver-button-accent:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-accent-glow), var(--shadow-xl);
+  }
+  
+  .konver-button-accent:active {
+    transform: translateY(0);
+  }
+  
+  .konver-button-ghost {
+    @apply bg-transparent text-foreground hover:bg-surface-elevation-1 active:bg-surface-elevation-2;
+    @apply transition-all duration-200 ease-out border border-transparent hover:border-border;
+  }
+  
+  .konver-button-hero {
+    @apply text-white font-semibold relative overflow-hidden px-8 py-4 text-lg;
+    background: var(--gradient-hero);
+    @apply transition-all duration-300 ease-out shadow-xl hover:shadow-2xl;
+    @apply focus-visible:ring-4 focus-visible:ring-primary/30 focus-visible:ring-offset-2;
+    transform: translateY(0) scale(1);
+  }
+  
+  .konver-button-hero:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-glow), var(--shadow-2xl);
+  }
+  
+  .konver-button-hero:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+  
+  /* Card Enhancements */
+  .konver-card {
+    @apply konver-surface rounded-xl p-6 transition-all duration-300 relative;
+    background: var(--gradient-surface);
+  }
+  
+  .konver-card-interactive {
+    @apply konver-card konver-hover cursor-pointer;
+    overflow: hidden;
+  }
+  
+  .konver-card-interactive::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(255, 255%, 255%, 0.1), transparent);
+    transition: left 0.5s;
+    pointer-events: none;
+  }
+  
+  .konver-card-interactive:hover::after {
+    left: 100%;
+  }
+  
+  .konver-card-feature {
+    @apply konver-card relative;
+    background: var(--gradient-surface);
+    border: 1px solid hsl(var(--primary)/0.2);
+    box-shadow: var(--shadow-md), inset 0 1px 0 0 hsla(255, 255%, 255%, 0.1);
+  }
+  
+  .konver-card-feature::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gradient-primary);
+  }
+  
+  .konver-card-glass {
+    @apply konver-glass rounded-xl p-6 transition-all duration-300 relative;
+  }
+  
+  .konver-card-stats {
+    @apply konver-surface rounded-xl p-6 transition-all duration-300 border border-border;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--surface-elevation-1)) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .konver-card-stats::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--gradient-primary);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .konver-card-stats:hover::before {
+    opacity: 0.1;
+  }
+  
+  /* Status Indicators */
+  .konver-status-success {
+    @apply bg-success/10 text-success border-success/20;
+  }
+  
+  .konver-status-warning {
+    @apply bg-warning/10 text-warning border-warning/20;
+  }
+  
+  .konver-status-error {
+    @apply bg-destructive/10 text-destructive border-destructive/20;
+  }
+  
+  .konver-status-info {
+    @apply bg-accent/10 text-accent border-accent/20;
+  }
+  
+  /* Enhanced Scrollbar */
+  .konver-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)/0.3) transparent;
+  }
+  
+  .konver-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .konver-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 6px;
+  }
+  
+  .konver-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, 
+      hsl(var(--muted-foreground)/0.2) 0%, 
+      hsl(var(--muted-foreground)/0.4) 100%);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    transition: all 0.2s ease;
+  }
+  
+  .konver-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, 
+      hsl(var(--primary)/0.3) 0%, 
+      hsl(var(--primary)/0.5) 100%);
+    transform: scaleY(1.2);
+  }
+  
+  /* Animation Classes */
+  .konver-animate-in {
+    animation: konver-slide-in 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-out {
+    animation: konver-slide-out 0.2s ease-in;
+  }
+  
+  .konver-animate-scale-in {
+    animation: konver-scale-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-float {
+    animation: konver-float 3s ease-in-out infinite;
+  }
+  
+  .konver-animate-pulse-glow {
+    animation: konver-pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .konver-animate-shimmer {
+    animation: konver-shimmer 2s linear infinite;
+  }
+  
+  .konver-animate-slide-left {
+    animation: konver-slide-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-slide-right {
+    animation: konver-slide-right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-fade-in {
+    animation: konver-fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-bounce-in {
+    animation: konver-bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  .konver-animate-glow-pulse {
+    animation: konver-glow-pulse 3s ease-in-out infinite;
+  }
+  
+  .konver-glow-pulse {
+    animation: konver-glow-pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes konver-slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @keyframes konver-slide-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.95);
+    }
+  }
+  
+  @keyframes konver-scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes konver-float {
+    0%, 100% { 
+      transform: translateY(0px);
+    }
+    50% { 
+      transform: translateY(-6px);
+    }
+  }
+  
+  @keyframes konver-pulse-glow {
+    0%, 100% { 
+      box-shadow: var(--shadow-md);
+    }
+    50% { 
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+  }
+  
+  @keyframes konver-shimmer {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: calc(200px + 100%) 0;
+    }
+  }
+  
+  @keyframes konver-slide-left {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes konver-slide-right {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes konver-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes konver-bounce-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.3) translateY(30px);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  
+  @keyframes konver-glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(66, 103, 245, 0.1);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(66, 103, 245, 0.2), 0 0 40px rgba(66, 103, 245, 0.1);
+    }
+  }
+  
+  /* Utility Classes */
+  .konver-backdrop {
+    backdrop-filter: blur(8px) saturate(150%);
+    background: hsl(var(--background)/0.8);
+  }
+  
+  .konver-border-gradient {
+    border-image: linear-gradient(135deg, hsl(var(--primary)/0.3), hsl(var(--accent)/0.3)) 1;
+  }
+  
+  /* Enhanced Assistant-specific enhancements */
+  .konver-assistant-sidebar {
+    background: linear-gradient(180deg, 
+      hsl(var(--card)/0.6) 0%, 
+      hsl(var(--card)/0.8) 40%, 
+      hsl(var(--card)/0.9) 60%,
+      hsl(var(--card)/0.7) 100%);
+    border-right: 1px solid hsl(var(--border)/0.5);
+    backdrop-filter: blur(16px) saturate(130%);
+    position: relative;
+  }
+  
+  .konver-assistant-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, 
+      transparent, 
+      hsl(var(--primary)/0.3) 20%, 
+      hsl(var(--accent)/0.2) 80%, 
+      transparent);
+  }
+  
+  @media (max-width: 1024px) {
+    .konver-assistant-sidebar {
+      width: 300px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .konver-assistant-sidebar {
+      position: fixed;
+      left: -100%;
+      top: 64px;
+      bottom: 0;
+      width: 280px;
+      z-index: 50;
+      transition: left 0.3s ease-out;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    }
+    
+    .konver-assistant-sidebar.open {
+      left: 0;
+    }
+  }
+  
+  .konver-nav-item {
+    @apply transition-all duration-300 ease-out relative overflow-hidden;
+    transform: translateX(0);
+  }
+  
+  .konver-nav-item:hover {
+    transform: translateX(2px);
+  }
+  
+  .konver-nav-item.active {
+    @apply shadow-sm;
+    box-shadow: inset 3px 0 0 hsl(var(--primary)), var(--shadow-sm);
+  }
+  
+  .konver-content-area {
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      hsl(var(--background)) 50%, 
+      hsl(var(--card)/0.2) 100%);
+    position: relative;
+  }
+  
+  .konver-content-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 2px 2px, hsl(var(--border)/0.1) 1px, transparent 0);
+    background-size: 32px 32px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  
+  /* Modern status indicators */
+  .konver-status-online {
+    @apply relative;
+  }
+  
+  .konver-status-online::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: inherit;
+    animation: konver-pulse-ring 2s ease-out infinite;
+  }
+  
+  @keyframes konver-pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+  
+  /* Enhanced Glass morphism effects */
+  .konver-glass-morphism {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.08) 0%, 
+      rgba(255, 255, 255, 0.03) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    position: relative;
+  }
+  
+  .konver-glass-morphism::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(255, 255, 255, 0.2), 
+      transparent);
+  }
+  
+  .konver-glass-card {
+    background: linear-gradient(135deg, 
+      hsla(var(--card), 0.95) 0%, 
+      hsla(var(--card), 0.8) 100%);
+    backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid hsl(var(--border)/0.3);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.08),
+      0 4px 16px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    position: relative;
+  }
+  
+  .konver-glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsl(var(--primary)/0.3), 
+      transparent);
+    border-radius: inherit;
+  }
 }
