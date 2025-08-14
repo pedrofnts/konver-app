@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Bot, Home, Menu } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Bot, Home, Menu, MessageSquare, Database, Settings, Trash2, RefreshCw, Upload } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useBot, useUpdateBot, useDeleteBot, useCreateBot } from "@/hooks/useBots";
 import { useToast } from "@/hooks/use-toast";
 import KonverLayout from "@/components/KonverLayout";
 import AssistantSidebar from "@/components/AssistantSidebar";
-import AssistantTestTab from "@/components/AssistantTestTab";
-import AssistantSettingsTab from "@/components/AssistantSettingsTab";
-import AssistantKnowledgeTab from "@/components/AssistantKnowledgeTab";
-import AssistantConversationsTab from "@/components/AssistantConversationsTab";
+import TabContainer from "@/components/TabContainer";
+import TestChatContent from "@/components/TestChatContent";
+import SettingsContent from "@/components/SettingsContent";
+import KnowledgeBaseContent from "@/components/KnowledgeBaseContent";
+import ConversationsContent from "@/components/ConversationsContent";
 import BotFeedbackManagement from "@/components/BotFeedbackManagement";
-import FloatingPromptAssistant from "@/components/FloatingPromptAssistant";
+import IntegrationsContent from "@/components/IntegrationsContent";
 import { AssistantData } from "@/types/assistant";
 import { PromptModificationRequest } from "@/components/PromptWizard";
 
@@ -20,20 +21,24 @@ export default function AssistantView() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const defaultTab = searchParams.get('tab') || 'test';
+  const defaultTab = searchParams.get('tab') || (id === 'new' ? 'settings' : 'test');
   
   const [activeTab, setActiveTab] = useState(defaultTab);
-  const [assistant, setAssistant] = useState<AssistantData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isNewBot, setIsNewBot] = useState(id === 'new');
+  
+  // Use the new hooks
+  const { data: bot, isLoading: loading, refetch } = useBot(id && id !== 'new' ? id : '');
+  const updateBotMutation = useUpdateBot();
+  const deleteBotMutation = useDeleteBot();
+  const createBotMutation = useCreateBot();
   
   // Settings states
-  const [assistantName, setAssistantName] = useState('');
-  const [assistantDescription, setAssistantDescription] = useState('');
-  const [systemPrompt, setSystemPrompt] = useState('');
+  const [assistantName, setAssistantName] = useState(isNewBot ? 'Novo Assistente' : '');
+  const [assistantDescription, setAssistantDescription] = useState(isNewBot ? 'Descrição do assistente' : '');
+  const [systemPrompt, setSystemPrompt] = useState(isNewBot ? 'Você é um assistente útil e inteligente.' : '');
   const [temperature, setTemperature] = useState([0.7]);
-  const [assistantStatus, setAssistantStatus] = useState('Ativo');
+  const [assistantStatus, setAssistantStatus] = useState('active');
   
   // Persona states
   const [personaObjective, setPersonaObjective] = useState('');
@@ -44,80 +49,70 @@ export default function AssistantView() {
   const { toast } = useToast();
   const { user, signOut } = useAuth();
 
-  const fetchAssistant = async () => {
-    if (!id || !user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('bots')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
+  // Transform bot data to AssistantData format
+  const assistant: AssistantData | null = isNewBot ? {
+    id: 'new',
+    name: assistantName,
+    description: assistantDescription,
+    status: assistantStatus,
+    conversations: 0,
+    performance: 0,
+    prompt: systemPrompt,
+    temperature: temperature[0],
+    max_tokens: null,
+    knowledge_base: null,
+    persona_name: assistantName,
+    persona_objective: personaObjective,
+    persona_personality: personaPersonality,
+    persona_style: personaStyle,
+    persona_target_audience: personaTargetAudience,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  } : bot ? {
+    id: bot.id,
+    name: bot.name,
+    description: bot.description,
+    status: bot.status || 'active',
+    conversations: bot.conversations || 0,
+    performance: bot.performance || 0,
+    prompt: bot.prompt,
+    temperature: bot.temperature,
+    max_tokens: bot.max_tokens,
+    knowledge_base: null,
+    persona_name: bot.persona_name,
+    persona_objective: bot.persona_objective,
+    persona_personality: bot.persona_personality,
+    persona_style: bot.persona_style,
+    persona_target_audience: bot.persona_target_audience,
+    created_at: bot.created_at,
+    updated_at: bot.updated_at
+  } : null;
 
-      if (error) {
-        throw error;
-      }
-
-      // Transform the data to match our interface
-      const transformedData: AssistantData = {
-        id: data.id,
-        name: data.name,
-        description: data.description,
-        status: data.status,
-        conversations: data.conversations,
-        performance: data.performance,
-        prompt: data.prompt,
-        temperature: data.temperature,
-        max_tokens: data.max_tokens,
-        knowledge_base: null, // Not used anymore
-        persona_name: data.persona_name,
-        persona_objective: data.persona_objective,
-        persona_personality: data.persona_personality,
-        persona_style: data.persona_style,
-        persona_target_audience: data.persona_target_audience,
-        created_at: data.created_at,
-        updated_at: data.updated_at
-      };
-
-      setAssistant(transformedData);
-      setAssistantName(data.name);
-      setAssistantDescription(data.description || '');
-      setSystemPrompt(data.prompt || 'You are a helpful AI assistant.');
-      setTemperature([data.temperature || 0.7]);
-      setAssistantStatus(data.status);
-      
-      // Set persona states
-      setPersonaObjective(data.persona_objective || '');
-      setPersonaPersonality(data.persona_personality || '');
-      setPersonaStyle(data.persona_style || '');
-      setPersonaTargetAudience(data.persona_target_audience || '');
-      
-    } catch (error) {
-      console.error('Error fetching assistant:', error);
-      toast({
-        title: "Erro ao carregar assistente",
-        description: "Não foi possível carregar os dados do assistente.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Monitor ID changes to update isNewBot state
   useEffect(() => {
-    fetchAssistant();
-  }, [id, user]);
+    setIsNewBot(id === 'new');
+  }, [id]);
+
+  // Initialize states from bot data
+  useEffect(() => {
+    if (bot && !isNewBot) {
+      setAssistantName(bot.name);
+      setAssistantDescription(bot.description || '');
+      setSystemPrompt(bot.prompt || 'Você é um assistente útil e inteligente.');
+      setTemperature([bot.temperature || 0.7]);
+      setAssistantStatus(bot.status || 'active');
+      setPersonaObjective(bot.persona_objective || '');
+      setPersonaPersonality(bot.persona_personality || '');
+      setPersonaStyle(bot.persona_style || '');
+      setPersonaTargetAudience(bot.persona_target_audience || '');
+    }
+  }, [bot, isNewBot]);
 
   const saveSettings = async () => {
-    if (!id || !user || !assistant) return;
-    
-    setSaving(true);
-    
-    try {
-      const { error } = await supabase
-        .from('bots')
-        .update({
+    if (isNewBot) {
+      // Create new bot
+      try {
+        const newBot = await createBotMutation.mutateAsync({
           name: assistantName,
           description: assistantDescription,
           prompt: systemPrompt,
@@ -128,31 +123,53 @@ export default function AssistantView() {
           persona_personality: personaPersonality,
           persona_style: personaStyle,
           persona_target_audience: personaTargetAudience,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        throw error;
+          conversations: 0,
+          performance: 0
+        });
+        
+        toast({
+          title: "Sucesso",
+          description: "Assistente criado com sucesso!",
+        });
+        
+        // Redirect to the new bot's page
+        navigate(`/assistant/${newBot.id}?tab=settings`, { replace: true });
+        return;
+      } catch (error) {
+        console.error('Error creating bot:', error);
+        toast({
+          title: "Erro",
+          description: "Falha ao criar o assistente",
+          variant: "destructive",
+        });
+        return;
       }
-
-      // Update local state
-      setAssistant({
-        ...assistant,
-        name: assistantName,
-        description: assistantDescription,
-        prompt: systemPrompt,
-        temperature: temperature[0],
-        status: assistantStatus,
-        knowledge_base: null, // Not used anymore
-        updated_at: new Date().toISOString()
+    }
+    
+    if (!id || !assistant) return;
+    
+    try {
+      await updateBotMutation.mutateAsync({
+        botId: id,
+        updates: {
+          name: assistantName,
+          description: assistantDescription,
+          prompt: systemPrompt,
+          temperature: temperature[0],
+          status: assistantStatus,
+          persona_name: assistantName,
+          persona_objective: personaObjective,
+          persona_personality: personaPersonality,
+          persona_style: personaStyle,
+          persona_target_audience: personaTargetAudience,
+        }
       });
 
       toast({
         title: "Configurações salvas",
         description: "As configurações do assistente foram atualizadas com sucesso.",
       });
+
     } catch (error) {
       console.error('Error saving settings:', error);
       toast({
@@ -160,8 +177,6 @@ export default function AssistantView() {
         description: "Não foi possível salvar as configurações.",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -187,7 +202,7 @@ export default function AssistantView() {
     });
   };
 
-  if (loading) {
+  if (loading && !isNewBot) {
     return (
       <KonverLayout 
         breadcrumbs={[
@@ -201,7 +216,7 @@ export default function AssistantView() {
             className="konver-hover-subtle"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Voltar
           </Button>
         }
       >
@@ -229,7 +244,7 @@ export default function AssistantView() {
     );
   }
 
-  if (!assistant) {
+  if (!assistant && !isNewBot) {
     return (
       <KonverLayout 
         breadcrumbs={[
@@ -243,7 +258,7 @@ export default function AssistantView() {
             className="konver-hover-subtle"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Voltar
           </Button>
         }
       >
@@ -268,51 +283,54 @@ export default function AssistantView() {
   }
 
   const renderActiveTabContent = () => {
+    if (!assistant) return null;
+
     switch (activeTab) {
       case 'test':
-        return (
-          <AssistantTestTab
-            assistant={assistant}
-            systemPrompt={systemPrompt}
-            temperature={temperature}
-            maxTokens={1000}
-          />
-        );
+        return isNewBot ? null : <TestChatContent assistantId={id || ''} />;
+      
       case 'conversations':
-        return <AssistantConversationsTab botId={id || ''} />;
+        return isNewBot ? null : <ConversationsContent assistantId={id || ''} />;
+      
       case 'settings':
         return (
-          <AssistantSettingsTab
-            botId={id || ''}
-            assistantName={assistantName}
-            setAssistantName={setAssistantName}
-            assistantDescription={assistantDescription}
-            setAssistantDescription={setAssistantDescription}
-            temperature={temperature}
-            setTemperature={setTemperature}
-            assistantStatus={assistantStatus}
-            setAssistantStatus={setAssistantStatus}
-            personaObjective={personaObjective}
-            setPersonaObjective={setPersonaObjective}
-            personaPersonality={personaPersonality}  
-            setPersonaPersonality={setPersonaPersonality}
-            personaStyle={personaStyle}
-            setPersonaStyle={setPersonaStyle}
-            personaTargetAudience={personaTargetAudience}
-            setPersonaTargetAudience={setPersonaTargetAudience}
-            saveSettings={saveSettings}
-            saving={saving}
+          <SettingsContent
+            assistant={{
+              id: assistant.id,
+              name: assistantName,
+              description: assistantDescription,
+              temperature: temperature[0],
+              active: assistantStatus === 'active',
+              prompts: {
+                principal: [],
+                triagem: [],
+                think: []
+              }
+            }}
+            updateAssistant={(updates) => {
+              if (updates.name !== undefined) setAssistantName(updates.name);
+              if (updates.description !== undefined) setAssistantDescription(updates.description);
+              if (updates.temperature !== undefined) setTemperature([updates.temperature]);
+              if (updates.active !== undefined) setAssistantStatus(updates.active ? 'active' : 'inactive');
+            }}
+            onSave={saveSettings}
           />
         );
+      
+      case 'integrations':
+        return isNewBot ? null : <IntegrationsContent assistantId={id || ''} />;
+      
       case 'knowledge':
-        return <AssistantKnowledgeTab botId={id || ''} />;
+        return isNewBot ? null : <KnowledgeBaseContent assistantId={id || ''} />;
+      
       case 'feedback':
-        return (
+        return isNewBot ? null : (
           <BotFeedbackManagement
             botId={id || ''}
             botName={assistant?.name || 'Bot'}
           />
         );
+      
       default:
         return null;
     }
@@ -323,7 +341,7 @@ export default function AssistantView() {
       assistant={assistant}
       breadcrumbs={[
         { label: 'Dashboard', href: '/' },
-        { label: assistant.name }
+        { label: isNewBot ? 'Criar Assistente' : assistant.name }
       ]}
       actions={
         <div className="flex items-center gap-2">
@@ -343,12 +361,12 @@ export default function AssistantView() {
             className="konver-hover-subtle"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Voltar
           </Button>
         </div>
       }
     >
-      <div className="flex min-h-[calc(100vh-12rem)] bg-gradient-to-br from-background via-background/95 to-card/10 relative">
+      <div className="flex h-[calc(100vh-7rem)] bg-gradient-to-br from-background via-background/95 to-card/10 relative">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"></div>
@@ -358,16 +376,19 @@ export default function AssistantView() {
           }}></div>
         </div>
 
-        {/* Mobile Overlay */}
+        {/* Mobile Overlay with Enhanced Animation */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/60 z-40 md:hidden konver-animate-fade-in backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
+            style={{
+              animation: 'konver-fade-in 0.2s ease-out'
+            }}
           />
         )}
 
-        {/* Modern Sidebar Navigation */}
-        <div className={`relative z-50 md:z-10 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-out`}>
+        {/* Modern Sidebar Navigation with Enhanced Transitions */}
+        <div className={`relative z-50 md:z-10 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]`}>
           <AssistantSidebar 
             activeTab={activeTab} 
             onTabChange={(tab) => {
@@ -375,70 +396,26 @@ export default function AssistantView() {
               setSidebarOpen(false); // Close sidebar on mobile when tab changes
             }}
             assistant={{
+              name: assistant.name,
               conversations: assistant.conversations,
               performance: assistant.performance,
               status: assistant.status
             }}
+            isNewBot={isNewBot}
           />
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 konver-content-area relative z-10 min-w-0">
-          <div className="relative">
-            {/* Content Container */}
-            <div className="p-4 sm:p-6 lg:p-8 xl:p-10 konver-scrollbar max-h-[calc(100vh-12rem)] overflow-y-auto">
-              <div className="max-w-6xl mx-auto">
-                {/* Content Header */}
-                <div className="mb-6 lg:mb-8 konver-animate-slide-right">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-1.5 sm:w-2 h-6 sm:h-8 rounded-full flex-shrink-0 ${
-                        activeTab === 'test' ? 'bg-violet-500' :
-                        activeTab === 'conversations' ? 'bg-emerald-500' :
-                        activeTab === 'settings' ? 'bg-blue-500' :
-                        activeTab === 'knowledge' ? 'bg-amber-500' :
-                        'bg-rose-500'
-                      }`} />
-                      <div className="min-w-0">
-                        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-tight">
-                          {activeTab === 'test' && 'Test Chat'}
-                          {activeTab === 'conversations' && 'Conversations'}
-                          {activeTab === 'settings' && 'Configuration'}
-                          {activeTab === 'knowledge' && 'Knowledge Base'}
-                          {activeTab === 'feedback' && 'Training & Feedback'}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
-                          {activeTab === 'test' && 'Test your assistant with live conversations and see real-time responses'}
-                          {activeTab === 'conversations' && 'View chat history, analytics, and conversation insights'}
-                          {activeTab === 'settings' && 'Manage assistant settings, prompts, and persona configuration'}
-                          {activeTab === 'knowledge' && 'Upload and organize knowledge sources for your assistant'}
-                          {activeTab === 'feedback' && 'Improve responses through feedback and training data'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="konver-animate-fade-in">
-                  <div className="relative">
-                    {renderActiveTabContent()}
-                  </div>
-                </div>
-              </div>
+        <div className="flex-1 konver-content-area relative z-10 min-w-0 flex flex-col h-full">
+          <div className="p-4 md:p-6 lg:p-8 flex-1 flex flex-col h-full">
+            <div className="konver-animate-fade-in flex-1 h-full overflow-hidden">
+              {renderActiveTabContent()}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Floating Prompt Assistant */}
-      {assistant && (
-        <FloatingPromptAssistant
-          currentPrompt={systemPrompt}
-          onApplyPrompt={handleApplyPromptFromAssistant}
-          assistantName="Assistente de Prompts"
-        />
-      )}
+
     </KonverLayout>
   );
 } 

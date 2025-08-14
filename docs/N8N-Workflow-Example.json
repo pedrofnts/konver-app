@@ -43,7 +43,7 @@
     },
     {
       "parameters": {
-        "url": "https://hporhdoioazpqaclqjjm.supabase.co/functions/v1/bot-feedback-api/best-response",
+        "url": "https://svznaorqshdqitwnipzy.supabase.co/functions/v1/bot-feedback-api/best-response",
         "sendQuery": false,
         "sendHeaders": true,
         "headerParameters": {
@@ -186,7 +186,7 @@
     },
     {
       "parameters": {
-        "url": "https://hporhdoioazpqaclqjjm.supabase.co/rest/v1/external_conversations",
+        "url": "https://svznaorqshdqitwnipzy.supabase.co/rest/v1/external_conversations",
         "sendQuery": false,
         "sendHeaders": true,
         "headerParameters": {
@@ -248,7 +248,7 @@
     },
     {
       "parameters": {
-        "url": "https://hporhdoioazpqaclqjjm.supabase.co/rest/v1/conversation_messages",
+        "url": "https://svznaorqshdqitwnipzy.supabase.co/rest/v1/conversation_messages",
         "sendQuery": false,
         "sendHeaders": true,
         "headerParameters": {
@@ -298,7 +298,7 @@
     },
     {
       "parameters": {
-        "url": "https://hporhdoioazpqaclqjjm.supabase.co/rest/v1/conversation_messages",
+        "url": "https://svznaorqshdqitwnipzy.supabase.co/rest/v1/conversation_messages",
         "sendQuery": false,
         "sendHeaders": true,
         "headerParameters": {
@@ -422,7 +422,7 @@
     },
     {
       "parameters": {
-        "url": "https://hporhdoioazpqaclqjjm.supabase.co/functions/v1/bot-feedback-api/apply-feedback",
+        "url": "https://svznaorqshdqitwnipzy.supabase.co/functions/v1/bot-feedback-api/apply-feedback",
         "sendQuery": false,
         "sendHeaders": true,
         "headerParameters": {

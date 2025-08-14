@@ -545,6 +545,27 @@
     animation: konver-glow-pulse 2s ease-in-out infinite;
   }
   
+  /* Additional animations needed by refactored components */
+  .konver-animate-slide-up {
+    animation: konver-slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-slide-down {
+    animation: konver-slide-down 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .konver-animate-bounce {
+    animation: konver-bounce 0.6s ease-out;
+  }
+  
+  .konver-animate-spin {
+    animation: konver-spin 1s linear infinite;
+  }
+  
+  .konver-animate-pulse {
+    animation: konver-pulse 2s ease-in-out infinite;
+  }
+  
   @keyframes konver-slide-in {
     from {
       opacity: 0;
@@ -676,13 +697,18 @@
   /* Enhanced Assistant-specific enhancements */
   .konver-assistant-sidebar {
     background: linear-gradient(180deg, 
-      hsl(var(--card)/0.6) 0%, 
-      hsl(var(--card)/0.8) 40%, 
-      hsl(var(--card)/0.9) 60%,
-      hsl(var(--card)/0.7) 100%);
-    border-right: 1px solid hsl(var(--border)/0.5);
-    backdrop-filter: blur(16px) saturate(130%);
+      hsl(var(--card)/0.85) 0%, 
+      hsl(var(--card)/0.92) 40%, 
+      hsl(var(--card)/0.95) 60%,
+      hsl(var(--card)/0.88) 100%);
+    border-right: 1px solid hsl(var(--border)/0.3);
+    backdrop-filter: blur(24px) saturate(150%);
     position: relative;
+    box-shadow: 
+      inset -1px 0 0 hsl(var(--border)/0.1),
+      0 4px 24px rgba(0, 0, 0, 0.04),
+      0 1px 8px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .konver-assistant-sidebar::before {
@@ -709,17 +735,61 @@
     .konver-assistant-sidebar {
       position: fixed;
       left: -100%;
-      top: 64px;
+      top: 56px;
       bottom: 0;
       width: 280px;
       z-index: 50;
-      transition: left 0.3s ease-out;
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        8px 0 32px rgba(0, 0, 0, 0.12),
+        4px 0 16px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(32px) saturate(180%);
     }
     
     .konver-assistant-sidebar.open {
       left: 0;
+      transform: translateX(0);
     }
+  }
+
+  /* Assistant Navigation Button Enhancements */
+  .konver-assistant-nav-btn {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+
+  .konver-assistant-nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary)/0.12), transparent);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .konver-assistant-nav-btn:hover {
+    border-color: hsl(var(--primary)/0.15);
+    box-shadow: 0 2px 8px hsl(var(--primary)/0.08);
+  }
+
+  .konver-assistant-nav-btn:hover::before {
+    left: 100%;
+  }
+
+  .konver-assistant-nav-btn.active {
+    background: linear-gradient(135deg, hsl(var(--primary)/0.1) 0%, hsl(var(--primary)/0.15) 100%);
+    border: 1px solid hsl(var(--primary)/0.25);
+    box-shadow: 
+      0 2px 8px hsl(var(--primary)/0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: none;
+  }
+
+  .konver-assistant-nav-btn.active::before {
+    background: linear-gradient(90deg, transparent, hsl(var(--primary)/0.05), transparent);
   }
   
   .konver-nav-item {
@@ -739,19 +809,37 @@
   .konver-content-area {
     background: linear-gradient(135deg, 
       hsl(var(--background)) 0%, 
-      hsl(var(--background)) 50%, 
-      hsl(var(--card)/0.2) 100%);
+      hsl(var(--background)/0.98) 50%, 
+      hsl(var(--card)/0.15) 100%);
     position: relative;
+    min-height: 100%;
+    transition: all 0.3s ease-out;
   }
   
   .konver-content-area::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle at 2px 2px, hsl(var(--border)/0.1) 1px, transparent 0);
-    background-size: 32px 32px;
-    opacity: 0.3;
+    background-image: radial-gradient(circle at 2px 2px, hsl(var(--border)/0.08) 1px, transparent 0);
+    background-size: 40px 40px;
+    opacity: 0.4;
     pointer-events: none;
+    animation: drift 60s linear infinite;
+  }
+
+  .konver-content-area::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsl(var(--primary)/0.2), 
+      hsl(var(--accent)/0.15), 
+      transparent);
+    opacity: 0.6;
   }
   
   /* Modern status indicators */
@@ -780,6 +868,117 @@
     }
   }
   
+  @keyframes konver-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes konver-slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes konver-bounce {
+    0%, 20%, 53%, 80%, 100% {
+      transform: translate3d(0,0,0);
+    }
+    40%, 43% {
+      transform: translate3d(0, -8px, 0);
+    }
+    70% {
+      transform: translate3d(0, -4px, 0);
+    }
+    90% {
+      transform: translate3d(0, -2px, 0);
+    }
+  }
+  
+  @keyframes konver-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes konver-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Responsive Tab Container Classes */
+  .konver-tab-container {
+    @apply min-h-0 flex flex-col;
+  }
+  
+  .konver-tab-content {
+    @apply flex-1 min-h-0 overflow-hidden;
+  }
+  
+  .konver-tab-content-scrollable {
+    @apply flex-1 min-h-0 overflow-y-auto konver-scrollbar;
+  }
+  
+  .konver-tab-content-flex {
+    @apply flex-1 min-h-0 flex flex-col;
+  }
+  
+  /* Focus states for better accessibility */
+  .konver-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background transition-all duration-200;
+  }
+  
+  .konver-input-focus {
+    @apply focus:border-primary/50 focus:ring-2 focus:ring-primary/10 focus:ring-offset-0 transition-all duration-200;
+  }
+  
+  /* Button variations for enhanced UX */
+  .konver-button-primary {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 konver-focus;
+  }
+  
+  .konver-button-destructive {
+    @apply bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-md hover:shadow-lg transition-all duration-200 konver-focus;
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    .konver-glass-card {
+      @apply p-4;
+      backdrop-filter: blur(16px);
+    }
+    
+    .konver-tab-container {
+      @apply px-4;
+    }
+    
+    .konver-card {
+      @apply p-4 rounded-lg;
+    }
+    
+    /* Ensure proper touch targets on mobile */
+    button, .konver-button-primary, .konver-button-destructive {
+      @apply min-h-[44px];
+    }
+  }
+
   /* Enhanced Glass morphism effects */
   .konver-glass-morphism {
     background: linear-gradient(135deg, 
@@ -808,15 +1007,17 @@
   
   .konver-glass-card {
     background: linear-gradient(135deg, 
-      hsla(var(--card), 0.95) 0%, 
-      hsla(var(--card), 0.8) 100%);
-    backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid hsl(var(--border)/0.3);
+      hsla(var(--card), 0.98) 0%, 
+      hsla(var(--card), 0.92) 100%);
+    backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid hsl(var(--border)/0.25);
     box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.08),
-      0 4px 16px rgba(0, 0, 0, 0.04),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      0 16px 48px rgba(0, 0, 0, 0.06),
+      0 8px 24px rgba(0, 0, 0, 0.04),
+      0 2px 8px rgba(0, 0, 0, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
     position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .konver-glass-card::before {
@@ -831,5 +1032,194 @@
       hsl(var(--primary)/0.3), 
       transparent);
     border-radius: inherit;
+  }
+
+  /* Assistant Tab Container Enhancements */
+  .konver-tab-container {
+    @apply konver-card-feature;
+    height: calc(100vh - 20rem);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Enhanced assistant container classes */
+  .konver-assistant-container {
+    height: calc(100vh - 20rem);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Chat-specific layout fixes */
+  .konver-assistant-step-content[data-variant="chat"] {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .konver-assistant-step-content[data-variant="chat"] > div {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .konver-tab-header {
+    @apply flex items-center justify-between p-6 border-b border-border/50;
+    background: linear-gradient(135deg, 
+      hsl(var(--card)/0.8) 0%, 
+      hsl(var(--card)/0.95) 100%);
+    backdrop-filter: blur(8px);
+    flex-shrink: 0;
+  }
+
+  .konver-tab-title {
+    @apply flex items-center space-x-3;
+  }
+
+  .konver-tab-title-icon {
+    @apply w-10 h-10 konver-gradient-primary rounded-xl flex items-center justify-center shadow-md konver-animate-float;
+  }
+
+  .konver-tab-title-content h2 {
+    @apply konver-text-gradient text-xl font-semibold;
+    margin-bottom: 0.25rem;
+  }
+
+  .konver-tab-title-content p {
+    @apply text-sm text-muted-foreground font-normal;
+    margin: 0;
+  }
+
+  .konver-tab-actions {
+    @apply flex items-center gap-2;
+    flex-shrink: 0;
+  }
+
+  .konver-tab-content {
+    @apply flex-1 overflow-hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .konver-tab-content-scrollable {
+    @apply konver-scrollbar h-full overflow-y-auto p-6;
+  }
+
+  .konver-tab-content-flex {
+    @apply flex flex-col h-full;
+  }
+
+  /* Consistent spacing for tab content */
+  .konver-tab-section {
+    @apply space-y-6 mb-8;
+  }
+
+  .konver-tab-section:last-child {
+    @apply mb-0;
+  }
+
+  /* Enhanced form styling within tabs */
+  .konver-tab-form-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-8;
+  }
+
+  .konver-tab-form-section {
+    @apply space-y-6;
+  }
+
+  .konver-tab-input-group {
+    @apply space-y-2;
+  }
+
+  .konver-tab-input-group label {
+    @apply text-base font-medium text-foreground;
+  }
+
+  .konver-tab-input-group input,
+  .konver-tab-input-group textarea {
+    @apply mt-2 konver-focus bg-background border-border;
+  }
+
+  .konver-tab-input-group input {
+    @apply h-12 rounded-xl;
+  }
+
+  .konver-tab-input-group textarea {
+    @apply rounded-xl;
+  }
+
+  /* Tab-specific loading states */
+  .konver-tab-loading {
+    @apply flex items-center justify-center py-16;
+  }
+
+  .konver-tab-loading-spinner {
+    @apply w-8 h-8 animate-spin text-primary;
+  }
+
+  /* Tab empty states */
+  .konver-tab-empty {
+    @apply text-center py-16;
+  }
+
+  .konver-tab-empty-icon {
+    @apply w-20 h-20 konver-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl konver-animate-float;
+  }
+
+  .konver-tab-empty-title {
+    @apply text-2xl font-bold text-foreground mb-3;
+  }
+
+  .konver-tab-empty-description {
+    @apply text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed;
+  }
+
+  /* Enhanced responsive behavior for tabs */
+  @media (max-width: 768px) {
+    .konver-tab-container {
+      height: calc(100vh - 14rem);
+    }
+    
+    .konver-tab-header {
+      @apply p-4;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    
+    .konver-tab-actions {
+      @apply w-full justify-between;
+    }
+    
+    .konver-tab-content-scrollable {
+      @apply p-4;
+    }
+    
+    .konver-tab-form-grid {
+      @apply grid-cols-1 gap-6;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .konver-tab-title {
+      @apply space-x-2;
+    }
+    
+    .konver-tab-title-icon {
+      @apply w-8 h-8;
+    }
+    
+    .konver-tab-title-content h2 {
+      @apply text-lg;
+    }
+    
+    .konver-tab-title-content p {
+      @apply text-xs;
+    }
   }
 }

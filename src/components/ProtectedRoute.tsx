@@ -7,9 +7,12 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth()
+  const { user, loading, profile } = useAuth()
+
+  console.log('🛡️ ProtectedRoute check:', { loading, userId: user?.id, profileId: profile?.id })
 
   if (loading) {
+    console.log('⏳ ProtectedRoute: Still loading...')
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
         <div className="text-center">

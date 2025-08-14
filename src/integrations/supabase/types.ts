@@ -7,69 +7,69 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
       bots: {
         Row: {
-          conversations: number
-          created_at: string
+          conversations: number | null
+          created_at: string | null
           description: string | null
           id: string
           max_tokens: number | null
           name: string
-          performance: number
+          performance: number | null
           persona_name: string | null
           persona_objective: string | null
           persona_personality: string | null
           persona_style: string | null
           persona_target_audience: string | null
           prompt: string | null
-          status: string
+          status: string | null
           temperature: number | null
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          conversations?: number
-          created_at?: string
+          conversations?: number | null
+          created_at?: string | null
           description?: string | null
           id?: string
           max_tokens?: number | null
           name: string
-          performance?: number
+          performance?: number | null
           persona_name?: string | null
           persona_objective?: string | null
           persona_personality?: string | null
           persona_style?: string | null
           persona_target_audience?: string | null
           prompt?: string | null
-          status?: string
+          status?: string | null
           temperature?: number | null
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          conversations?: number
-          created_at?: string
+          conversations?: number | null
+          created_at?: string | null
           description?: string | null
           id?: string
           max_tokens?: number | null
           name?: string
-          performance?: number
+          performance?: number | null
           persona_name?: string | null
           persona_objective?: string | null
           persona_personality?: string | null
           persona_style?: string | null
           persona_target_audience?: string | null
           prompt?: string | null
-          status?: string
+          status?: string | null
           temperature?: number | null
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -78,7 +78,7 @@ export type Database = {
         Row: {
           content: string
           conversation_id: string
-          created_at: string
+          created_at: string | null
           id: string
           message_type: string
           metadata: Json | null
@@ -86,7 +86,7 @@ export type Database = {
         Insert: {
           content: string
           conversation_id: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           message_type: string
           metadata?: Json | null
@@ -94,7 +94,7 @@ export type Database = {
         Update: {
           content?: string
           conversation_id?: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           message_type?: string
           metadata?: Json | null
@@ -109,41 +109,62 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          content: string | null
+          embedding: string | null
+          id: number
+          metadata: Json | null
+        }
+        Insert: {
+          content?: string | null
+          embedding?: string | null
+          id?: number
+          metadata?: Json | null
+        }
+        Update: {
+          content?: string | null
+          embedding?: string | null
+          id?: number
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       external_conversations: {
         Row: {
           bot_id: string
-          created_at: string
+          created_at: string | null
           external_id: string | null
           id: string
           last_message_at: string | null
           metadata: Json | null
           phone_number: string
-          status: string
-          updated_at: string
+          status: string | null
+          updated_at: string | null
           user_name: string
         }
         Insert: {
           bot_id: string
-          created_at?: string
+          created_at?: string | null
           external_id?: string | null
           id?: string
           last_message_at?: string | null
           metadata?: Json | null
           phone_number: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
           user_name: string
         }
         Update: {
           bot_id?: string
-          created_at?: string
+          created_at?: string | null
           external_id?: string | null
           id?: string
           last_message_at?: string | null
           metadata?: Json | null
           phone_number?: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
           user_name?: string
         }
         Relationships: [
@@ -156,47 +177,77 @@ export type Database = {
           },
         ]
       }
+      integrations: {
+        Row: {
+          config: Json
+          created_at: string | null
+          enabled: boolean
+          id: string
+          provider: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string | null
+          enabled?: boolean
+          id?: string
+          provider: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          enabled?: boolean
+          id?: string
+          provider?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       knowledge_base_files: {
         Row: {
           bot_id: string
-          chunks_count: number
-          created_at: string
+          chunks_count: number | null
+          created_at: string | null
           file_name: string
           file_size: string
           file_type: string
           id: string
           metadata: Json | null
-          status: string
+          status: string | null
           storage_path: string
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           bot_id: string
-          chunks_count?: number
-          created_at?: string
+          chunks_count?: number | null
+          created_at?: string | null
           file_name: string
           file_size: string
           file_type: string
           id?: string
           metadata?: Json | null
-          status?: string
+          status?: string | null
           storage_path: string
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           bot_id?: string
-          chunks_count?: number
-          created_at?: string
+          chunks_count?: number | null
+          created_at?: string | null
           file_name?: string
           file_size?: string
           file_type?: string
           id?: string
           metadata?: Json | null
-          status?: string
+          status?: string | null
           storage_path?: string
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -216,6 +267,7 @@ export type Database = {
           conversation_message_id: string | null
           created_at: string | null
           created_by_user_id: string | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"]
           id: string
           improved_response: string
           last_applied_at: string | null
@@ -232,6 +284,7 @@ export type Database = {
           conversation_message_id?: string | null
           created_at?: string | null
           created_by_user_id?: string | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"]
           id?: string
           improved_response: string
           last_applied_at?: string | null
@@ -248,6 +301,7 @@ export type Database = {
           conversation_message_id?: string | null
           created_at?: string | null
           created_by_user_id?: string | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"]
           id?: string
           improved_response?: string
           last_applied_at?: string | null
@@ -278,27 +332,27 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          created_at: string
+          created_at: string | null
           email: string | null
           full_name: string | null
           id: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
-          created_at?: string
+          created_at?: string | null
           email?: string | null
           full_name?: string | null
           id: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
-          created_at?: string
+          created_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -310,7 +364,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean | null
-          prompt_type: string
+          prompt_type: Database["public"]["Enums"]["prompt_type"]
           updated_at: string | null
           user_id: string
           version_number: number
@@ -322,7 +376,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
-          prompt_type: string
+          prompt_type: Database["public"]["Enums"]["prompt_type"]
           updated_at?: string | null
           user_id: string
           version_number: number
@@ -334,7 +388,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean | null
-          prompt_type?: string
+          prompt_type?: Database["public"]["Enums"]["prompt_type"]
           updated_at?: string | null
           user_id?: string
           version_number?: number
@@ -360,6 +414,7 @@ export type Database = {
           conversation_status: string | null
           created_at: string | null
           created_by_user_id: string | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"] | null
           id: string | null
           improved_response: string | null
           last_applied_at: string | null
@@ -398,9 +453,24 @@ export type Database = {
         Args: { input_text: string }
         Returns: string[]
       }
+      match_documents: {
+        Args: { filter?: Json; match_count?: number; query_embedding: string }
+        Returns: {
+          content: string
+          id: number
+          metadata: Json
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       feedback_status: "pending" | "applied" | "rejected" | "in_review"
+      feedback_type:
+        | "improve_response"
+        | "add_context"
+        | "fix_error"
+        | "enhance_tone"
+      prompt_type: "principal" | "triagem" | "think"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -529,6 +599,13 @@ export const Constants = {
   public: {
     Enums: {
       feedback_status: ["pending", "applied", "rejected", "in_review"],
+      feedback_type: [
+        "improve_response",
+        "add_context",
+        "fix_error",
+        "enhance_tone",
+      ],
+      prompt_type: ["principal", "triagem", "think"],
     },
   },
 } as const
@@ -537,7 +614,42 @@ export const Constants = {
 export type MessageType = 'user' | 'bot';
 export type ConversationStatus = 'active' | 'archived' | 'blocked';
 export type FeedbackStatus = 'pending' | 'applied' | 'rejected' | 'in_review';
+export type FeedbackType = 'improve_response' | 'add_context' | 'fix_error' | 'enhance_tone';
+export type PromptType = 'principal' | 'triagem' | 'think';
+export type BotStatus = 'active' | 'inactive' | 'archived';
 
+// Bot/Assistant interfaces
+export interface Bot {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  prompt?: string;
+  temperature?: number;
+  max_tokens?: number;
+  persona_name?: string;
+  persona_objective?: string;
+  persona_personality?: string;
+  persona_style?: string;
+  persona_target_audience?: string;
+  status: BotStatus;
+  conversations: number;
+  performance: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Profile interfaces
+export interface Profile {
+  id: string;
+  email?: string;
+  full_name?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Conversation interfaces
 export interface ConversationMessage {
   id: string;
   conversation_id: string;
@@ -568,6 +680,7 @@ export interface ConversationWithMessages extends ExternalConversation {
   };
 }
 
+// Feedback interfaces
 export interface MessageFeedback {
   id: string;
   conversation_message_id?: string;
@@ -576,6 +689,7 @@ export interface MessageFeedback {
   user_message_context: string;
   original_bot_response: string;
   improved_response: string;
+  feedback_type: FeedbackType;
   status: FeedbackStatus;
   similarity_keywords?: string[];
   conversation_context?: Json;
@@ -595,9 +709,7 @@ export interface MessageFeedbackWithContext extends MessageFeedback {
   message_type?: string;
 }
 
-// Tipos para versionamento de prompts
-export type PromptType = 'principal' | 'triagem' | 'think';
-
+// Prompt Version interfaces
 export interface PromptVersion {
   id: string;
   bot_id: string;
@@ -629,4 +741,48 @@ export interface PromptVersionSummary {
   principal: PromptVersionsByType;
   triagem: PromptVersionsByType;
   think: PromptVersionsByType;
+}
+
+// Knowledge Base interfaces
+export interface KnowledgeBaseFile {
+  id: string;
+  bot_id: string;
+  user_id: string;
+  file_name: string;
+  file_type: string;
+  file_size: string;
+  storage_path: string;
+  status: 'processing' | 'ready' | 'error';
+  chunks_count: number;
+  metadata?: Json;
+  created_at: string;
+  updated_at: string;
+}
+
+// Integration interfaces
+export type Integration = Tables<'integrations'>
+export type IntegrationInsert = TablesInsert<'integrations'>
+export type IntegrationUpdate = TablesUpdate<'integrations'>
+
+// Config types for specific providers
+export interface KommoConfig {
+  url: string;
+  token: string;
+  accountName?: string;
+  accountId?: number;
+  subdomain?: string;
+  connectedAt?: string;
+}
+
+export interface WhatsAppConfig {
+  phoneNumber: string;
+  businessName: string;
+  webhookUrl: string;
+}
+
+export type IntegrationConfig = KommoConfig | WhatsAppConfig | Record<string, any>;
+
+// Integration with config typed
+export interface IntegrationWithConfig extends Integration {
+  config: IntegrationConfig;
 }

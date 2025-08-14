@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +18,8 @@ import {
   Play, 
   Calendar 
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useBots, useDeleteBot, useUpdateBot } from "@/hooks/useBots";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import KonverCard from "@/components/KonverCard";
@@ -39,42 +39,15 @@ interface BotsListProps {
 }
 
 export default function BotsList({ searchQuery = '' }: BotsListProps) {
-  const [bots, setBots] = useState<BotData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      fetchBots();
-    }
-  }, [user]);
-
-  const fetchBots = async () => {
-    try {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('bots')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setBots(data || []);
-    } catch (error) {
-      console.error('Error fetching bots:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch assistants",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  // Use the new hooks
+  const { data: bots = [], isLoading: loading } = useBots();
+  const deleteBot = useDeleteBot();
+  const updateBot = useUpdateBot();
 
   const toggleBotStatus = async (botId: string, currentStatus: string) => {
     setUpdatingStatus(botId);
@@ -82,26 +55,20 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
     try {
       const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
       
-      const { error } = await supabase
-        .from('bots')
-        .update({ status: newStatus })
-        .eq('id', botId);
-
-      if (error) throw error;
-
-      setBots(prev => prev.map(bot => 
-        bot.id === botId ? { ...bot, status: newStatus } : bot
-      ));
+      await updateBot.mutateAsync({
+        botId,
+        updates: { status: newStatus }
+      });
 
       toast({
-        title: "Success",
-        description: `Assistant ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`,
+        title: "Sucesso",
+        description: `Assistente ${newStatus === 'active' ? 'ativado' : 'desativado'} com sucesso`,
       });
     } catch (error) {
       console.error('Error updating bot status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update assistant status",
+        title: "Erro",
+        description: "Falha ao atualizar status do assistente",
         variant: "destructive",
       });
     } finally {
@@ -156,12 +123,12 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
           <Bot className="h-10 w-10 text-white" />
         </div>
         <h3 className="text-2xl font-semibold mb-3 text-foreground">
-          {searchQuery ? 'No assistants found' : 'Ready to create your first assistant?'}
+          {searchQuery ? 'Nenhum assistente encontrado' : 'Pronto para criar seu primeiro assistente?'}
         </h3>
         <p className="text-base text-muted-foreground/90 mb-8 max-w-md leading-relaxed">
           {searchQuery 
-            ? `No assistants match "${searchQuery}". Try a different search term or create a new assistant.`
-            : 'Transform your workflow with intelligent AI assistants. Create powerful conversational experiences in minutes.'
+            ? `Nenhum assistente corresponde a "${searchQuery}". Tente um termo de busca diferente ou crie um novo assistente.`
+            : 'Comece a criar assistentes inteligentes que entendem contexto, aprendem com interações e oferecem experiências excepcionais aos usuários.'
           }
         </p>
         <div className="flex gap-3">
@@ -171,7 +138,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-5 w-5 mr-2" />
-              Create Your First Assistant
+              Criar Seu Primeiro Assistente
             </Button>
           )}
           {searchQuery && (
@@ -180,7 +147,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create New Assistant
+              Criar Novo Assistente
             </Button>
           )}
         </div>
@@ -194,7 +161,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
         <KonverCard
           key={bot.id}
           title={bot.name}
-          description={bot.description || "No description provided"}
+          description={bot.description || "Nenhuma descrição fornecida"}
           status={bot.status}
           hover
           onClick={() => navigate(`/assistant/${bot.id}`)}
@@ -209,7 +176,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
                   <div className="p-1 rounded-md bg-primary/10 group-hover/stat:bg-primary/20 transition-colors">
                     <MessageSquare className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground">Conversations</span>
+                  <span className="text-sm font-medium text-muted-foreground">Conversas</span>
                 </div>
                 <p className="text-xl font-bold text-foreground transition-all duration-300">
                   {bot.conversations.toLocaleString()}
@@ -243,7 +210,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
                   <Calendar className="h-3 w-3 text-muted-foreground" />
                 </div>
                 <span className="text-xs font-medium text-muted-foreground">
-                  Created {new Date(bot.created_at).toLocaleDateString('en-US', { 
+                  Criado em {new Date(bot.created_at).toLocaleDateString('pt-BR', { 
                     month: 'short', 
                     day: 'numeric',
                     year: 'numeric'
@@ -285,7 +252,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
                       className="hover:bg-accent/10 cursor-pointer"
                     >
                       <Settings className="mr-3 h-4 w-4 text-primary" />
-                      <span className="font-medium">Settings</span>
+                      <span className="font-medium">Configurações</span>
                     </DropdownMenuItem>
                     
                     <DropdownMenuItem
@@ -296,7 +263,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
                       className="hover:bg-accent/10 cursor-pointer"
                     >
                       <Eye className="mr-3 h-4 w-4 text-accent" />
-                      <span className="font-medium">View Conversations</span>
+                      <span className="font-medium">Ver Conversas</span>
                     </DropdownMenuItem>
                     
                     <DropdownMenuItem
@@ -310,12 +277,12 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
                       {bot.status === 'active' ? (
                         <>
                           <Pause className="mr-3 h-4 w-4 text-warning" />
-                          <span className="font-medium">Deactivate</span>
+                          <span className="font-medium">Desativar</span>
                         </>
                       ) : (
                         <>
                           <Power className="mr-3 h-4 w-4 text-success" />
-                          <span className="font-medium">Activate</span>
+                          <span className="font-medium">Ativar</span>
                         </>
                       )}
                     </DropdownMenuItem>

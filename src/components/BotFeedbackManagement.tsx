@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import AssistantStepHeader from "@/components/AssistantStepHeader";
+import AssistantStepContent from "@/components/AssistantStepContent";
 import { 
   Search,
   CheckCircle,
@@ -13,7 +15,8 @@ import {
   MessageSquare,
   Target,
   BarChart3,
-  Trash2
+  Trash2,
+  RefreshCw
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -179,17 +182,60 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
     });
   };
 
+  // Header configuration
+  const headerActions = [
+    {
+      label: "Atualizar",
+      icon: <RefreshCw className="w-4 h-4" />,
+      onClick: fetchFeedbacks,
+      disabled: loading,
+      variant: "outline" as const
+    }
+  ];
+
+  const headerMetrics = [
+    {
+      label: "Total Feedback",
+      value: stats.total.toString(),
+      icon: <MessageSquare className="w-4 h-4" />,
+      color: "primary" as const
+    },
+    {
+      label: "Pendentes",
+      value: stats.pending.toString(),
+      icon: <Clock className="w-4 h-4" />,
+      color: "warning" as const
+    },
+    {
+      label: "Aplicados",
+      value: stats.applied.toString(),
+      icon: <CheckCircle className="w-4 h-4" />,
+      color: "success" as const
+    }
+  ];
+
   if (loading) {
     return (
-      <div className="konver-animate-in">
-        <div className="konver-card-feature">
-          <div className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-muted rounded w-1/3"></div>
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-16 bg-muted rounded"></div>
-                ))}
+      <div className="flex flex-col h-full">
+        <AssistantStepHeader
+          title="Training & Feedback"
+          description="Review feedback and improve your assistant's responses"
+          icon={<Target className="w-5 h-5 text-white" />}
+          compact={true}
+          actions={headerActions}
+          loading={true}
+          className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
+        />
+        
+        <div className="flex-1 min-h-0 mt-4">
+          <div className="konver-glass-card rounded-2xl h-full flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="konver-gradient-primary w-16 h-16 rounded-3xl flex items-center justify-center mx-auto shadow-xl konver-animate-float">
+                <Target className="w-8 h-8 text-white animate-spin" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">Carregando...</h3>
+                <p className="text-sm text-muted-foreground">Por favor, aguarde enquanto carregamos o conteúdo.</p>
               </div>
             </div>
           </div>
@@ -199,60 +245,42 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
   }
 
   return (
-    <div className="konver-animate-in space-y-6">
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        <div className="konver-card-stats">
-          <div className="text-2xl font-bold text-primary">{stats.total}</div>
-          <div className="text-sm text-muted-foreground">Total</div>
-        </div>
-        <div className="konver-card-stats">
-          <div className="text-2xl font-bold text-warning">{stats.pending}</div>
-          <div className="text-sm text-muted-foreground">Pendentes</div>
-        </div>
-        <div className="konver-card-stats">
-          <div className="text-2xl font-bold text-success">{stats.applied}</div>
-          <div className="text-sm text-muted-foreground">Aplicados</div>
-        </div>
-        <div className="konver-card-stats">
-          <div className="text-2xl font-bold text-info">{stats.in_review}</div>
-          <div className="text-sm text-muted-foreground">Em Análise</div>
-        </div>
-        <div className="konver-card-stats">
-          <div className="text-2xl font-bold text-destructive">{stats.rejected}</div>
-          <div className="text-sm text-muted-foreground">Rejeitados</div>
-        </div>
-        <div className="konver-card-stats">
-          <div className="text-2xl font-bold text-accent">{stats.total_applications}</div>
-          <div className="text-sm text-muted-foreground">Aplicações</div>
-        </div>
-      </div>
+    <div className="flex flex-col h-full">
+      <AssistantStepHeader
+        title="Training & Feedback"
+        description="Review feedback and improve your assistant's responses"
+        icon={<Target className="w-5 h-5 text-white" />}
+        compact={true}
+        actions={headerActions}
+        metrics={headerMetrics}
+        loading={loading}
+        className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
+      />
 
-      {/* Main Content */}
-      <div className="konver-card-feature">
-        <div className="konver-tab-header">
-          <div className="konver-tab-title">
-            <Target className="w-5 h-5 text-primary" />
-            <span>Training & Feedback</span>
-          </div>
-          <div className="konver-tab-actions">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={fetchFeedbacks}
-              className="konver-button-secondary"
-            >
-              <TrendingUp className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        <div className="konver-tab-content">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex-1 min-h-0 mt-4">
+        <div className="konver-glass-card rounded-2xl h-full flex flex-col overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full konver-scrollbar">
+              <div className="p-6 space-y-6">
+            {filteredFeedbacks.length === 0 && !loading ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4">
+                  <div className="konver-gradient-primary w-16 h-16 rounded-3xl flex items-center justify-center mx-auto shadow-xl">
+                    <MessageSquare className="w-10 h-10 text-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold konver-text-gradient">No feedback available</h3>
+                    <p className="text-sm text-muted-foreground">User feedback will appear here as your assistant receives responses and suggestions for improvement.</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
             {/* Lista de Feedbacks */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 flex flex-col min-h-0">
               
               {/* Filtros */}
-              <div className="space-y-3 mb-4">
+              <div className="space-y-3 mb-4 flex-shrink-0">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -278,8 +306,9 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
                 </div>
               </div>
               
-              <ScrollArea className="h-[600px] konver-scrollbar">
-                <div className="space-y-2 p-4">
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full konver-scrollbar">
+                  <div className="space-y-2 p-4">
                 {filteredFeedbacks.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
@@ -339,12 +368,13 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
                     </div>
                   ))
                 )}
-                </div>
-              </ScrollArea>
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
 
             {/* Detalhes do Feedback */}
-            <div className="bg-card border rounded-lg">
+            <div className="bg-card border rounded-lg flex flex-col min-h-0">
               {selectedFeedback ? (
                 <>
                   <div className="p-4 border-b">
@@ -361,7 +391,7 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
                     </div>
                   </div>
                   
-                  <div className="p-4 space-y-4">
+                  <div className="p-4 space-y-4 flex-1 overflow-y-auto">
                     {/* Status e Tipo */}
                     <div className="flex items-center gap-2">
                       <Badge 
@@ -523,7 +553,7 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
                   </div>
                 </>
               ) : (
-                <div className="p-12 text-center">
+                <div className="p-12 text-center flex-1 flex flex-col justify-center">
                   <BarChart3 className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     Selecione um feedback
@@ -534,6 +564,10 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
                 </div>
               )}
             </div>
+              </div>
+            )}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </div>

@@ -7,7 +7,9 @@ import {
   Zap,
   Copy,
   Download,
-  TrendingUp
+  TrendingUp,
+  MoreHorizontal,
+  Plug
 } from "lucide-react";
 
 interface AssistantSidebarProps {
@@ -19,32 +21,38 @@ interface AssistantSidebarProps {
     performance: number;
     status?: string;
   };
+  isNewBot?: boolean;
 }
 
 const navigationItems = [
   {
     id: 'test',
-    label: 'Test Chat',
+    label: 'Chat de Teste',
     icon: Zap
   },
   {
     id: 'conversations',
-    label: 'Conversations',
+    label: 'Conversas',
     icon: MessageSquare
   },
   {
     id: 'settings',
-    label: 'Configuration',
+    label: 'Configuração',
     icon: Settings
   },
   {
+    id: 'integrations',
+    label: 'Integrações',
+    icon: Plug
+  },
+  {
     id: 'knowledge',
-    label: 'Knowledge Base',
+    label: 'Base de Conhecimento',
     icon: Database
   },
   {
     id: 'feedback',
-    label: 'Training & Feedback',
+    label: 'Treinamento e Feedback',
     icon: Target
   }
 ];
@@ -52,17 +60,17 @@ const navigationItems = [
 const quickActions = [
   {
     id: 'analytics',
-    label: 'View Analytics',
+    label: 'Ver Análises',
     icon: TrendingUp
   },
   {
     id: 'clone',
-    label: 'Clone Assistant',
+    label: 'Clonar Assistente',
     icon: Copy
   },
   {
     id: 'export',
-    label: 'Export Data',
+    label: 'Exportar Dados',
     icon: Download
   }
 ];
@@ -70,87 +78,100 @@ const quickActions = [
 export default function AssistantSidebar({ 
   activeTab, 
   onTabChange, 
-  assistant 
+  assistant,
+  isNewBot = false 
 }: AssistantSidebarProps) {
+  
+  // Filter navigation items based on whether it's a new bot
+  const availableNavItems = navigationItems.filter(item => {
+    if (isNewBot) {
+      // Only show settings tab for new bots
+      return item.id === 'settings';
+    }
+    return true;
+  });
   return (
-    <div className="w-80 xl:w-96 konver-assistant-sidebar p-6 space-y-6 md:static fixed left-0 top-16 bottom-0 z-50 overflow-y-auto">
-      {/* Container 1: Assistant Overview */}
+    <div className="w-72 konver-assistant-sidebar p-4 space-y-4 md:static fixed left-0 top-14 bottom-0 z-50 overflow-y-auto">
+      {/* Assistant Overview - Compact Version */}
       {assistant && (
-        <div className="konver-glass-card rounded-xl p-5" 
+        <div className="konver-glass-card rounded-lg p-4 transition-all duration-300 hover:shadow-lg" 
              style={{
-               background: 'linear-gradient(135deg, hsla(var(--card), 0.95) 0%, hsla(var(--surface-elevation-1), 0.9) 100%)',
-               border: '1px solid hsl(var(--border)/0.3)',
-               boxShadow: 'var(--shadow-md)'
+               background: 'linear-gradient(135deg, hsla(var(--card), 0.98) 0%, hsla(var(--surface-elevation-1), 0.95) 100%)',
+               border: '1px solid hsl(var(--border)/0.2)',
+               boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.05)',
+               backdropFilter: 'blur(12px) saturate(120%)'
              }}>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-                <Bot className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm">
+                <Bot className="w-5 h-5 text-white" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-background animate-pulse" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border border-background" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-base truncate text-foreground">{assistant.name}</h3>
-              <div className="flex items-center gap-4 mt-2">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-primary/60" />
-                  <span className="text-sm text-muted-foreground">{assistant.conversations} conversations</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-sm text-green-600 font-medium">{assistant.performance}% performance</span>
-                </div>
+              <h3 className="font-medium text-sm truncate text-foreground">{assistant.name}</h3>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-xs text-muted-foreground">{assistant.conversations} chats</span>
+                <span className="text-xs text-green-600 font-medium">{assistant.performance}%</span>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Container 2: Navigation Items */}
-      <div className="konver-glass-card rounded-xl p-5"
+      {/* Navigation - More Compact Design */}
+      <div className="konver-glass-card rounded-lg p-3 transition-all duration-300"
            style={{
-             background: 'linear-gradient(135deg, hsla(var(--card), 0.95) 0%, hsla(var(--surface-elevation-1), 0.9) 100%)',
-             border: '1px solid hsl(var(--border)/0.3)',
-             boxShadow: 'var(--shadow-md)'
+             background: 'linear-gradient(135deg, hsla(var(--card), 0.98) 0%, hsla(var(--surface-elevation-1), 0.95) 100%)',
+             border: '1px solid hsl(var(--border)/0.2)',
+             boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.05)',
+             backdropFilter: 'blur(12px) saturate(120%)'
            }}>
-        <nav className="space-y-2">
-          {navigationItems.map(item => {
+        <nav className="space-y-1">
+          {availableNavItems.map(item => {
             const Icon = item.icon;
+            const isActive = activeTab === item.id;
             return (
               <button 
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
-                className={`w-full h-11 flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  activeTab === item.id 
-                    ? 'bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/20 shadow-sm transform hover:scale-[1.02]' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:transform hover:scale-[1.02] hover:shadow-sm'
+                className={`konver-assistant-nav-btn w-full h-9 flex items-center gap-3 px-3 py-2 rounded-md font-medium transition-all duration-200 transform hover:scale-[1.02] ${
+                  isActive 
+                    ? 'active text-primary' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
                 }`}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">{item.label}</span>
+                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                <span className="text-sm font-medium">{item.label}</span>
               </button>
             );
           })}
         </nav>
       </div>
 
-      {/* Container 3: Quick Actions */}
-      <div className="konver-glass-card rounded-xl p-5"
+      {/* Quick Actions - Horizontal Layout for Compactness */}
+      <div className="konver-glass-card rounded-lg p-3 transition-all duration-300"
            style={{
-             background: 'linear-gradient(135deg, hsla(var(--card), 0.95) 0%, hsla(var(--surface-elevation-1), 0.9) 100%)',
-             border: '1px solid hsl(var(--border)/0.3)',
-             boxShadow: 'var(--shadow-md)'
+             background: 'linear-gradient(135deg, hsla(var(--card), 0.98) 0%, hsla(var(--surface-elevation-1), 0.95) 100%)',
+             border: '1px solid hsl(var(--border)/0.2)',
+             boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.05)',
+             backdropFilter: 'blur(12px) saturate(120%)'
            }}>
-        <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Quick Actions</span>
+          <MoreHorizontal className="w-4 h-4 text-muted-foreground/60" />
+        </div>
+        <div className="grid grid-cols-3 gap-2 mt-3">
           {quickActions.map(action => {
             const Icon = action.icon;
             return (
               <button 
                 key={action.id}
-                className="w-full h-11 flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200 hover:transform hover:scale-[1.02] hover:shadow-sm"
+                className="group flex flex-col items-center gap-1 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-all duration-200 transform hover:scale-105"
+                title={action.label}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">{action.label}</span>
+                <Icon className="w-4 h-4 group-hover:scale-110 transition-transform duration-150" />
+                <span className="text-xs font-medium leading-none">{action.label.split(' ')[0]}</span>
               </button>
             );
           })}
