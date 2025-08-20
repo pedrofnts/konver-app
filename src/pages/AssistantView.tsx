@@ -14,6 +14,7 @@ import KnowledgeBaseContent from "@/components/KnowledgeBaseContent";
 import ConversationsContent from "@/components/ConversationsContent";
 import BotFeedbackManagement from "@/components/BotFeedbackManagement";
 import IntegrationsContent from "@/components/IntegrationsContent";
+import WhatsAppConnection from "@/components/WhatsAppConnection";
 import CompanyContent from "@/components/CompanyContent";
 import { AssistantData } from "@/types/assistant";
 import { PromptModificationRequest } from "@/components/PromptWizard";

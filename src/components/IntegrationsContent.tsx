@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import AssistantStepHeader from "@/components/AssistantStepHeader";
 import IntegrationCard from "@/components/IntegrationCard";
 import WhatsAppIntegration from "@/components/WhatsAppIntegration";
+import WhatsAppConnection from "@/components/WhatsAppConnection";
 import KommoIntegration from "@/components/KommoIntegration";
 import { useIntegrations } from "@/hooks/useIntegrations";
+import { useWhatsApp } from "@/hooks/useWhatsApp";
 import { Integration, KommoConfig, WhatsAppConfig } from "@/integrations/supabase/types";
 import { 
   Puzzle,
@@ -37,6 +39,7 @@ interface IntegrationsContentProps {
 
 export default function IntegrationsContent({ assistantId }: IntegrationsContentProps) {
   const { integrations: dbIntegrations, isLoading, refetch } = useIntegrations();
+  const { status: whatsappStatus } = useWhatsApp({ botId: assistantId, enabled: true });
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationUIData | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -44,17 +47,24 @@ export default function IntegrationsContent({ assistantId }: IntegrationsContent
   const integrations = useMemo(() => {
     const uiIntegrations: IntegrationUIData[] = [];
 
-    // Always show WhatsApp integration
+    // Always show WhatsApp integration with real status
     const whatsappDb = dbIntegrations.find(i => i.provider === 'whatsapp');
+    const whatsappCardStatus = whatsappStatus.status === 'connected' ? 'connected' : 
+                              whatsappStatus.status === 'connecting' ? 'pending' : 
+                              'disconnected';
+    const whatsappCardColor = whatsappStatus.status === 'connected' ? 'success' : 
+                             whatsappStatus.status === 'connecting' ? 'warning' : 
+                             'destructive';
+    
     uiIntegrations.push({
       id: whatsappDb?.id || 'whatsapp-new',
       name: 'WhatsApp',
       platform: 'whatsapp',
-      status: whatsappDb?.enabled ? 'connected' : 'disconnected',
+      status: whatsappCardStatus,
       description: 'Integração com WhatsApp para atendimento automatizado',
       icon: <MessageCircle className="w-5 h-5" />,
-      color: whatsappDb?.enabled ? 'success' : 'warning',
-      config: whatsappDb?.config as any
+      color: whatsappCardColor,
+      config: whatsappDb?.config as Record<string, unknown>
     });
 
     // Always show Kommo integration
@@ -72,7 +82,7 @@ export default function IntegrationsContent({ assistantId }: IntegrationsContent
     });
 
     return uiIntegrations;
-  }, [dbIntegrations]);
+  }, [dbIntegrations, whatsappStatus]);
 
   const handleRefresh = async () => {
     await refetch();
@@ -115,9 +125,8 @@ export default function IntegrationsContent({ assistantId }: IntegrationsContent
   if (selectedIntegration) {
     if (selectedIntegration.platform === 'whatsapp') {
       return (
-        <WhatsAppIntegration
-          integration={selectedIntegration}
-          onSave={handleSaveIntegration}
+        <WhatsAppConnection
+          botId={assistantId}
           onClose={handleCloseConfig}
         />
       );

@@ -10,7 +10,8 @@ import {
   TrendingUp,
   MoreHorizontal,
   Plug,
-  Building2
+  Building2,
+  MessageCircle
 } from "lucide-react";
 
 interface AssistantSidebarProps {
