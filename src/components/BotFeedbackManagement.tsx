@@ -218,8 +218,8 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
     return (
       <div className="flex flex-col h-full">
         <AssistantStepHeader
-          title="Training & Feedback"
-          description="Review feedback and improve your assistant's responses"
+          title="Treinamento e Feedback"
+          description="Revise feedbacks e melhore as respostas do seu assistente"
           icon={<Target className="w-5 h-5 text-white" />}
           compact={true}
           actions={headerActions}
@@ -247,8 +247,8 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
   return (
     <div className="flex flex-col h-full">
       <AssistantStepHeader
-        title="Training & Feedback"
-        description="Review feedback and improve your assistant's responses"
+        title="Treinamento e Feedback"
+        description="Revise feedbacks e melhore as respostas do seu assistente"
         icon={<Target className="w-5 h-5 text-white" />}
         compact={true}
         actions={headerActions}
@@ -269,8 +269,8 @@ export default function BotFeedbackManagement({ botId, botName }: BotFeedbackMan
                     <MessageSquare className="w-10 h-10 text-white" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold konver-text-gradient">No feedback available</h3>
-                    <p className="text-sm text-muted-foreground">User feedback will appear here as your assistant receives responses and suggestions for improvement.</p>
+                    <h3 className="text-lg font-semibold konver-text-gradient">Nenhum feedback disponível</h3>
+                    <p className="text-sm text-muted-foreground">Feedbacks dos usuários aparecerão aqui conforme seu assistente receber respostas e sugestões de melhoria.</p>
                   </div>
                 </div>
               </div>

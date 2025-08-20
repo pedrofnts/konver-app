@@ -9,7 +9,8 @@ import {
   Download,
   TrendingUp,
   MoreHorizontal,
-  Plug
+  Plug,
+  Building2
 } from "lucide-react";
 
 interface AssistantSidebarProps {
@@ -27,7 +28,7 @@ interface AssistantSidebarProps {
 const navigationItems = [
   {
     id: 'test',
-    label: 'Chat de Teste',
+    label: 'Chat',
     icon: Zap
   },
   {
@@ -39,6 +40,11 @@ const navigationItems = [
     id: 'settings',
     label: 'Configuração',
     icon: Settings
+  },
+  {
+    id: 'company',
+    label: 'Empresa',
+    icon: Building2
   },
   {
     id: 'integrations',
@@ -85,8 +91,8 @@ export default function AssistantSidebar({
   // Filter navigation items based on whether it's a new bot
   const availableNavItems = navigationItems.filter(item => {
     if (isNewBot) {
-      // Only show settings tab for new bots
-      return item.id === 'settings';
+      // Only show settings and company tabs for new bots
+      return item.id === 'settings' || item.id === 'company';
     }
     return true;
   });
@@ -158,7 +164,7 @@ export default function AssistantSidebar({
              backdropFilter: 'blur(12px) saturate(120%)'
            }}>
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Quick Actions</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ações Rápidas</span>
           <MoreHorizontal className="w-4 h-4 text-muted-foreground/60" />
         </div>
         <div className="grid grid-cols-3 gap-2 mt-3">

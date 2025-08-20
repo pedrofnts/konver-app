@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,9 @@ import {
   AlertTriangle,
   ExternalLink,
   RefreshCw,
-  Shield
+  Shield,
+  Settings,
+  Edit
 } from "lucide-react";
 
 interface IntegrationUIData {
@@ -43,12 +45,41 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
   const [testMessage, setTestMessage] = useState<string>('');
+  const [isEditing, setIsEditing] = useState(false);
   
-  // Form state
-  const [config, setConfig] = useState<KommoConfig>({
-    url: (integration.config as KommoConfig)?.url || '',
-    token: (integration.config as KommoConfig)?.token || ''
+  // Form state - initialize with all config data from integration
+  const [config, setConfig] = useState<KommoConfig>(() => {
+    const integrationConfig = integration.config as KommoConfig;
+    return {
+      url: integrationConfig?.url || '',
+      token: integrationConfig?.token || '',
+      accountName: integrationConfig?.accountName || '',
+      accountId: integrationConfig?.accountId || '',
+      subdomain: integrationConfig?.subdomain || '',
+      connectedAt: integrationConfig?.connectedAt || ''
+    };
   });
+
+  // Check if integration is connected (has account name from initial data or current config)
+  const isConnected = integration.status === 'connected' && (
+    config.accountName || 
+    (integration.config as KommoConfig)?.accountName
+  );
+
+  // Update config when integration prop changes
+  useEffect(() => {
+    const integrationConfig = integration.config as KommoConfig;
+    if (integrationConfig) {
+      setConfig({
+        url: integrationConfig.url || '',
+        token: integrationConfig.token || '',
+        accountName: integrationConfig.accountName || '',
+        accountId: integrationConfig.accountId || '',
+        subdomain: integrationConfig.subdomain || '',
+        connectedAt: integrationConfig.connectedAt || ''
+      });
+    }
+  }, [integration.config]);
 
   const handleInputChange = (field: string, value: unknown) => {
     setConfig(prev => ({ ...prev, [field]: value }));
@@ -103,7 +134,8 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
         };
         
         setTestResult('success');
-        setTestMessage(`Integração salva com sucesso! Conectado à ${result.data.accountName}`);
+        setTestMessage(`Conectado com sucesso à ${result.data.accountName}`);
+        setIsEditing(false); // Exit edit mode after successful save
         onSave(updatedIntegration);
       } else {
         setTestResult('error');
@@ -169,11 +201,24 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
 
 
   // Header configuration
-  const headerActions = [
+  const headerActions = isConnected && !isEditing ? [
     {
       label: "Voltar",
       icon: <ArrowLeft className="w-4 h-4" />,
       onClick: onClose,
+      variant: "outline" as const
+    },
+    {
+      label: "Editar",
+      icon: <Settings className="w-4 h-4" />,
+      onClick: () => setIsEditing(true),
+      variant: "outline" as const
+    }
+  ] : [
+    {
+      label: "Voltar",
+      icon: <ArrowLeft className="w-4 h-4" />,
+      onClick: () => isEditing ? setIsEditing(false) : onClose,
       variant: "outline" as const
     },
     {
@@ -252,7 +297,70 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
                   </Alert>
                 )}
 
+                {/* Connected Account View */}
+                {isConnected && !isEditing && (
+                  <div className="konver-surface-elevated rounded-2xl p-6 border-success/20 bg-success/5">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-success/10 text-success w-12 h-12 rounded-xl flex items-center justify-center border border-success/20">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold text-success">Conectado</h3>
+                          <p className="text-sm text-muted-foreground">Integração ativa e funcionando</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center space-x-2"
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Configurar</span>
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                        <div className="text-xs text-muted-foreground mb-2">Conta Conectada</div>
+                        <div className="font-semibold text-lg">{config.accountName}</div>
+                      </div>
+                      
+                      {config.subdomain && (
+                        <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                          <div className="text-xs text-muted-foreground mb-2">Subdomínio</div>
+                          <div className="font-medium">{config.subdomain}</div>
+                        </div>
+                      )}
+                      
+                      {config.accountId && (
+                        <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                          <div className="text-xs text-muted-foreground mb-2">ID da Conta</div>
+                          <div className="font-medium">#{config.accountId}</div>
+                        </div>
+                      )}
+                      
+                      {config.connectedAt && (
+                        <div className="p-4 rounded-lg bg-background/50 border border-border/50">
+                          <div className="text-xs text-muted-foreground mb-2">Conectado em</div>
+                          <div className="font-medium">
+                            {new Date(config.connectedAt).toLocaleDateString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* API Configuration */}
+                {(!isConnected || isEditing) && (
                 <div className="konver-surface-elevated rounded-2xl p-6">
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="bg-warning/10 text-warning w-10 h-10 rounded-xl flex items-center justify-center border border-warning/20">
@@ -299,59 +407,10 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
                     </div>
                   </div>
                 </div>
-
-                {/* Connected Account Info */}
-                {config.accountName && (
-                  <div className="konver-surface-elevated rounded-2xl p-6 border-success/20 bg-success/5">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="bg-success/10 text-success w-10 h-10 rounded-xl flex items-center justify-center border border-success/20">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold">Conta Conectada</h3>
-                        <p className="text-sm text-muted-foreground">Informações da conta Kommo</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-background/50 border border-border/50">
-                        <div className="text-xs text-muted-foreground mb-1">Nome da Conta</div>
-                        <div className="font-medium">{config.accountName}</div>
-                      </div>
-                      
-                      {config.subdomain && (
-                        <div className="p-3 rounded-lg bg-background/50 border border-border/50">
-                          <div className="text-xs text-muted-foreground mb-1">Subdomínio</div>
-                          <div className="font-medium">{config.subdomain}</div>
-                        </div>
-                      )}
-                      
-                      {config.accountId && (
-                        <div className="p-3 rounded-lg bg-background/50 border border-border/50">
-                          <div className="text-xs text-muted-foreground mb-1">ID da Conta</div>
-                          <div className="font-medium">#{config.accountId}</div>
-                        </div>
-                      )}
-                      
-                      {config.connectedAt && (
-                        <div className="p-3 rounded-lg bg-background/50 border border-border/50">
-                          <div className="text-xs text-muted-foreground mb-1">Conectado em</div>
-                          <div className="font-medium">
-                            {new Date(config.connectedAt).toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 )}
 
                 {/* Setup Instructions */}
+                {(!isConnected || isEditing) && (
                 <div className="konver-card rounded-xl p-6 bg-muted/20 border-muted/20">
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
@@ -378,6 +437,7 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             </div>
           </ScrollArea>

@@ -107,7 +107,7 @@ const Index = () => {
                 Seus Assistentes de IA
               </h2>
               <p className="text-base text-muted-foreground/90 leading-relaxed max-w-2xl">
-                Crie assistentes de IA conversacionais poderosos, personalizados para suas necessidades específicas. Cada assistente pode ser customizado com personalidades únicas, bases de conhecimento e capacidades.
+                Crie assistentes de IA conversacionais poderosos, personalizados para o seu atendimento.
               </p>
             </div>
           </div>

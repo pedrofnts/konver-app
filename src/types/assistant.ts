@@ -29,6 +29,11 @@ export interface AssistantData {
   persona_personality: string | null;
   persona_style: string | null;
   persona_target_audience: string | null;
+  company_name?: string | null;
+  company_address?: string | null;
+  company_website?: string | null;
+  company_instagram?: string | null;
+  company_business_hours?: string | null;
   created_at: string;
   updated_at: string;
 } 

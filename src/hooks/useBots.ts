@@ -78,8 +78,12 @@ export const useUpdateBot = () => {
 
   return useMutation({
     mutationFn: async ({ botId, updates }: { botId: string; updates: TablesUpdate<'bots'> }) => {
+      console.log('🟠 useUpdateBot.mutationFn called');
+      console.log('🟠 Parameters:', { botId, updates, userId: user?.id });
+      
       if (!user?.id) throw new Error('User must be authenticated');
       
+      console.log('🟠 Executing Supabase update...');
       const { data, error } = await supabase
         .from('bots')
         .update(updates)
@@ -88,12 +92,24 @@ export const useUpdateBot = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      console.log('🟠 Supabase response:', { data, error });
+      
+      if (error) {
+        console.error('🔴 Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('🟠 Update successful, returning data:', data);
       return data as Bot;
     },
     onSuccess: (data) => {
+      console.log('🟠 useUpdateBot.onSuccess called with:', data);
       queryClient.invalidateQueries({ queryKey: ['bots', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['bot', data.id] });
+      console.log('🟠 Cache invalidated for bot queries');
+    },
+    onError: (error) => {
+      console.error('🔴 useUpdateBot.onError called:', error);
     }
   });
 };

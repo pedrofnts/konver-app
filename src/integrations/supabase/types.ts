@@ -16,6 +16,11 @@ export type Database = {
     Tables: {
       bots: {
         Row: {
+          company_address: string | null
+          company_business_hours: string | null
+          company_instagram: string | null
+          company_name: string | null
+          company_website: string | null
           conversations: number | null
           created_at: string | null
           description: string | null
@@ -35,6 +40,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          company_address?: string | null
+          company_business_hours?: string | null
+          company_instagram?: string | null
+          company_name?: string | null
+          company_website?: string | null
           conversations?: number | null
           created_at?: string | null
           description?: string | null
@@ -54,6 +64,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          company_address?: string | null
+          company_business_hours?: string | null
+          company_instagram?: string | null
+          company_name?: string | null
+          company_website?: string | null
           conversations?: number | null
           created_at?: string | null
           description?: string | null
@@ -449,9 +464,65 @@ export type Database = {
       }
     }
     Functions: {
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
       extract_keywords_from_text: {
         Args: { input_text: string }
         Returns: string[]
+      }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: unknown
       }
       match_documents: {
         Args: { filter?: Json; match_count?: number; query_embedding: string }
@@ -461,6 +532,42 @@ export type Database = {
           metadata: Json
           similarity: number
         }[]
+      }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
     }
     Enums: {
@@ -635,6 +742,11 @@ export interface Bot {
   status: BotStatus;
   conversations: number;
   performance: number;
+  company_name?: string;
+  company_address?: string;
+  company_website?: string;
+  company_instagram?: string;
+  company_business_hours?: string;
   created_at: string;
   updated_at: string;
 }

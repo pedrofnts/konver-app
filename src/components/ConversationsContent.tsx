@@ -16,7 +16,7 @@ import {
   Phone,
   MessageCircle
 } from "lucide-react";
-import { useConversations } from '@/hooks/useConversations';
+import { useConversations, useConversationWithMessages } from '@/hooks/useConversations';
 
 // Helper function to format time, can be moved to a utils file
 const formatTime = (timestamp: string, format: 'time' | 'date') => {
@@ -71,30 +71,30 @@ const ConversationList = ({ conversations, selectedConversation, onSelect, loadi
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm font-medium text-foreground truncate">
-                  {conversation.user_name}
+                  {conversation.user_name || 'Usuário'}
                 </p>
                 <span className="text-xs text-muted-foreground">
-                  {formatTime(conversation.created_at, 'date')}
+                  {formatTime(conversation.created_at || new Date().toISOString(), 'date')}
                 </span>
               </div>
               <div className="flex items-center space-x-2 mb-2">
                 <Phone className="w-3 h-3 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
-                  {conversation.user_phone}
+                  {conversation.phone_number || 'N/A'}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                {conversation.last_message}
+                {conversation.last_message_at ? 'Última conversa em ' + formatTime(conversation.last_message_at, 'date') : 'Sem mensagens'}
               </p>
               <div className="flex items-center justify-between">
                 <Badge 
                   variant="outline" 
                   className={`text-xs px-2 py-1 bg-success/10 text-success border-success/20`}
                 >
-                  {conversation.status}
+                  {conversation.status || 'active'}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {conversation.messages_count} mensagens
+                  Conversa ativa
                 </span>
               </div>
             </div>
@@ -151,28 +151,28 @@ const MessageDetails = ({ conversation, messages, loading }) => {
           </Avatar>
           <div className="flex-1">
             <h3 className="font-semibold text-foreground">
-              {conversation.user_name}
+              {conversation.user_name || 'Usuário'}
             </h3>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Phone className="w-3 h-3" />
-              <span>{conversation.user_phone}</span>
+              <span>{conversation.phone_number || 'N/A'}</span>
               <span>•</span>
-              <span>{conversation.messages_count} mensagens</span>
+              <span>{messages.length} mensagens</span>
             </div>
           </div>
           <Badge 
             variant="outline" 
             className={`text-xs px-2 py-1 bg-success/10 text-success border-success/20`}
           >
-            {conversation.status}
+            {conversation.status || 'active'}
           </Badge>
         </div>
       </div>
       <ScrollArea className="flex-1 p-4">
         {messages.map(message => (
-          <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
+          <div key={message.id} className={`flex ${message.message_type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
             <div className={`max-w-xs lg:max-w-sm rounded-2xl px-4 py-3 shadow-sm ${
-              message.sender === 'user'
+              message.message_type === 'user'
                 ? 'konver-gradient-primary text-white'
                 : 'bg-muted/70 text-foreground'
             }`}>
@@ -180,11 +180,11 @@ const MessageDetails = ({ conversation, messages, loading }) => {
                 {message.content}
               </p>
               <div className={`mt-2 flex items-center space-x-1 text-xs ${
-                message.sender === 'user' ? 'text-white/70' : 'text-muted-foreground'
+                message.message_type === 'user' ? 'text-white/70' : 'text-muted-foreground'
               }`}>
                 <Clock className="w-3 h-3" />
-                <span>{formatTime(message.timestamp, 'time')}</span>
-                {message.sender === 'assistant' && (
+                <span>{formatTime(message.created_at || new Date().toISOString(), 'time')}</span>
+                {message.message_type === 'bot' && (
                   <Bot className="w-3 h-3 ml-1" />
                 )}
               </div>
@@ -202,25 +202,30 @@ export default function ConversationsContent({ assistantId, onRefresh }) {
   const [selectedConversation, setSelectedConversation] = useState(null);
 
   const {
-    conversations,
-    messages,
-    loadingConversations,
-    loadingMessages,
+    data: conversations = [],
+    isLoading: loadingConversations,
     error,
-    loadConversations,
-    loadMessages
+    refetch: loadConversations
   } = useConversations(assistantId);
 
+  const {
+    data: messagesData,
+    isLoading: loadingMessages,
+    refetch: loadMessages
+  } = useConversationWithMessages(selectedConversation?.id || '');
+
+  const messages = messagesData?.messages || [];
+
   useEffect(() => {
-    if (selectedConversation) {
-      loadMessages(selectedConversation.id);
+    if (selectedConversation && loadMessages) {
+      loadMessages();
     }
   }, [selectedConversation, loadMessages]);
 
   const filteredConversations = useMemo(() => {
     return conversations.filter(conv => {
-      const matchesSearch = conv.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           conv.user_phone.includes(searchTerm);
+      const matchesSearch = conv.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           conv.phone_number?.includes(searchTerm);
       const matchesStatus = statusFilter === 'all' || conv.status === statusFilter;
       return matchesSearch && matchesStatus;
     });

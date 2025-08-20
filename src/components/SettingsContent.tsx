@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -49,7 +49,7 @@ interface SettingsContentProps {
   updateAssistant: (updates: Partial<Assistant>) => void;
   onCreatePromptVersion?: (type: 'principal' | 'triagem' | 'think') => void;
   onActivatePromptVersion?: (type: 'principal' | 'triagem' | 'think', versionId: string) => void;
-  onSave?: () => void;
+  onSave?: (localValues?: { name: string; description: string; temperature: number }) => void;
 }
 
 export default function SettingsContent({ 
@@ -64,29 +64,56 @@ export default function SettingsContent({
   const [localTemperature, setLocalTemperature] = useState([assistant.temperature]);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Sync local state when assistant prop changes
+  useEffect(() => {
+    console.log('🔵 SettingsContent useEffect triggered');
+    console.log('🔵 Assistant prop changed:', { 
+      name: assistant.name, 
+      description: assistant.description, 
+      temperature: assistant.temperature 
+    });
+    console.log('🔵 Previous local state:', { localName, localDescription, localTemperature });
+    
+    setLocalName(assistant.name);
+    setLocalDescription(assistant.description);
+    setLocalTemperature([assistant.temperature]);
+    
+    console.log('🔵 Local state updated to match assistant prop');
+  }, [assistant.name, assistant.description, assistant.temperature]);
+
   const handleSave = async () => {
+    console.log('🔵 SettingsContent.handleSave called');
+    console.log('🔵 Local states:', { localName, localDescription, localTemperature });
+    console.log('🔵 Assistant prop:', assistant);
+    
     setIsSaving(true);
     
     // Update local states first
-    updateAssistant({
+    const updateData = {
       name: localName,
       description: localDescription,
       temperature: localTemperature[0]
-    });
+    };
+    console.log('🔵 Calling updateAssistant with:', updateData);
+    updateAssistant(updateData);
     
-    // Call the actual save function if provided
+    // Call the actual save function if provided, passing the local values directly
     if (onSave) {
       try {
-        await onSave();
+        console.log('🔵 Calling onSave function with local values...');
+        await onSave(updateData); // Pass local values to onSave
+        console.log('🔵 onSave completed successfully');
       } catch (error) {
-        console.error('Error saving:', error);
+        console.error('🔴 Error saving:', error);
       }
     } else {
+      console.log('🟡 No onSave function provided, using fallback');
       // Fallback simulation for when onSave is not provided
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     setIsSaving(false);
+    console.log('🔵 SettingsContent.handleSave completed');
   };
 
   const handleReset = () => {

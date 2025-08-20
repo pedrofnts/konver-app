@@ -14,6 +14,7 @@ import KnowledgeBaseContent from "@/components/KnowledgeBaseContent";
 import ConversationsContent from "@/components/ConversationsContent";
 import BotFeedbackManagement from "@/components/BotFeedbackManagement";
 import IntegrationsContent from "@/components/IntegrationsContent";
+import CompanyContent from "@/components/CompanyContent";
 import { AssistantData } from "@/types/assistant";
 import { PromptModificationRequest } from "@/components/PromptWizard";
 
@@ -46,10 +47,17 @@ export default function AssistantView() {
   const [personaStyle, setPersonaStyle] = useState('');
   const [personaTargetAudience, setPersonaTargetAudience] = useState('');
   
+  // Company states
+  const [companyName, setCompanyName] = useState('');
+  const [companyAddress, setCompanyAddress] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [companyInstagram, setCompanyInstagram] = useState('');
+  const [companyBusinessHours, setCompanyBusinessHours] = useState('');
+  
   const { toast } = useToast();
   const { user, signOut } = useAuth();
 
-  // Transform bot data to AssistantData format
+  // Transform bot data to AssistantData format - use current local state values
   const assistant: AssistantData | null = isNewBot ? {
     id: 'new',
     name: assistantName,
@@ -66,24 +74,34 @@ export default function AssistantView() {
     persona_personality: personaPersonality,
     persona_style: personaStyle,
     persona_target_audience: personaTargetAudience,
+    company_name: companyName,
+    company_address: companyAddress,
+    company_website: companyWebsite,
+    company_instagram: companyInstagram,
+    company_business_hours: companyBusinessHours,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   } : bot ? {
     id: bot.id,
-    name: bot.name,
-    description: bot.description,
-    status: bot.status || 'active',
+    name: assistantName, // Use current local state
+    description: assistantDescription, // Use current local state
+    status: assistantStatus, // Use current local state
     conversations: bot.conversations || 0,
     performance: bot.performance || 0,
-    prompt: bot.prompt,
-    temperature: bot.temperature,
+    prompt: systemPrompt, // Use current local state
+    temperature: temperature[0], // Use current local state
     max_tokens: bot.max_tokens,
     knowledge_base: null,
-    persona_name: bot.persona_name,
-    persona_objective: bot.persona_objective,
-    persona_personality: bot.persona_personality,
-    persona_style: bot.persona_style,
-    persona_target_audience: bot.persona_target_audience,
+    persona_name: assistantName, // Use current local state
+    persona_objective: personaObjective, // Use current local state
+    persona_personality: personaPersonality, // Use current local state
+    persona_style: personaStyle, // Use current local state
+    persona_target_audience: personaTargetAudience, // Use current local state
+    company_name: companyName, // Use current local state
+    company_address: companyAddress, // Use current local state
+    company_website: companyWebsite, // Use current local state
+    company_instagram: companyInstagram, // Use current local state
+    company_business_hours: companyBusinessHours, // Use current local state
     created_at: bot.created_at,
     updated_at: bot.updated_at
   } : null;
@@ -105,27 +123,61 @@ export default function AssistantView() {
       setPersonaPersonality(bot.persona_personality || '');
       setPersonaStyle(bot.persona_style || '');
       setPersonaTargetAudience(bot.persona_target_audience || '');
+      setCompanyName(bot.company_name || '');
+      setCompanyAddress(bot.company_address || '');
+      setCompanyWebsite(bot.company_website || '');
+      setCompanyInstagram(bot.company_instagram || '');
+      setCompanyBusinessHours(bot.company_business_hours || '');
     }
   }, [bot, isNewBot]);
 
-  const saveSettings = async () => {
+  const saveSettings = async (localValues?: { name: string; description: string; temperature: number }) => {
+    console.log('🟣 saveSettings called');
+    console.log('🟣 Local values received:', localValues);
+    console.log('🟣 Current state values:', {
+      assistantName,
+      assistantDescription,
+      systemPrompt,
+      temperature: temperature[0],
+      assistantStatus,
+      isNewBot,
+      id,
+      assistant: assistant ? { id: assistant.id, name: assistant.name, description: assistant.description } : null
+    });
+
+    // Use local values if provided, otherwise use current state
+    const nameToSave = localValues?.name ?? assistantName;
+    const descriptionToSave = localValues?.description ?? assistantDescription;
+    const temperatureToSave = localValues?.temperature ?? temperature[0];
+    
+    console.log('🟣 Values to save:', { nameToSave, descriptionToSave, temperatureToSave });
+    
     if (isNewBot) {
       // Create new bot
       try {
-        const newBot = await createBotMutation.mutateAsync({
-          name: assistantName,
-          description: assistantDescription,
+        const newBotData = {
+          name: nameToSave,
+          description: descriptionToSave,
           prompt: systemPrompt,
-          temperature: temperature[0],
+          temperature: temperatureToSave,
           status: assistantStatus,
-          persona_name: assistantName,
+          persona_name: nameToSave,
           persona_objective: personaObjective,
           persona_personality: personaPersonality,
           persona_style: personaStyle,
           persona_target_audience: personaTargetAudience,
+          company_name: companyName,
+          company_address: companyAddress,
+          company_website: companyWebsite,
+          company_instagram: companyInstagram,
+          company_business_hours: companyBusinessHours,
           conversations: 0,
           performance: 0
-        });
+        };
+        
+        console.log('🟣 Creating new bot with data:', newBotData);
+        const newBot = await createBotMutation.mutateAsync(newBotData);
+        console.log('🟣 New bot created:', newBot);
         
         toast({
           title: "Sucesso",
@@ -136,7 +188,7 @@ export default function AssistantView() {
         navigate(`/assistant/${newBot.id}?tab=settings`, { replace: true });
         return;
       } catch (error) {
-        console.error('Error creating bot:', error);
+        console.error('🔴 Error creating bot:', error);
         toast({
           title: "Erro",
           description: "Falha ao criar o assistente",
@@ -146,24 +198,52 @@ export default function AssistantView() {
       }
     }
     
-    if (!id || !assistant) return;
+    if (!id || !assistant) {
+      console.log('🔴 Cannot save - missing id or assistant:', { id, assistant });
+      return;
+    }
     
     try {
-      await updateBotMutation.mutateAsync({
+      const updateData = {
+        name: nameToSave,
+        description: descriptionToSave,
+        prompt: systemPrompt,
+        temperature: temperatureToSave,
+        status: assistantStatus,
+        persona_name: nameToSave,
+        persona_objective: personaObjective,
+        persona_personality: personaPersonality,
+        persona_style: personaStyle,
+        persona_target_audience: personaTargetAudience,
+        company_name: companyName,
+        company_address: companyAddress,
+        company_website: companyWebsite,
+        company_instagram: companyInstagram,
+        company_business_hours: companyBusinessHours,
+      };
+      
+      console.log('🟣 Updating bot with id:', id);
+      console.log('🟣 Update data:', updateData);
+      
+      const result = await updateBotMutation.mutateAsync({
         botId: id,
-        updates: {
-          name: assistantName,
-          description: assistantDescription,
-          prompt: systemPrompt,
-          temperature: temperature[0],
-          status: assistantStatus,
-          persona_name: assistantName,
-          persona_objective: personaObjective,
-          persona_personality: personaPersonality,
-          persona_style: personaStyle,
-          persona_target_audience: personaTargetAudience,
-        }
+        updates: updateData
       });
+      
+      console.log('🟣 Update mutation result:', result);
+
+      // Update local states to match saved values
+      if (localValues) {
+        console.log('🟣 Updating local states to match saved values...');
+        setAssistantName(localValues.name);
+        setAssistantDescription(localValues.description);
+        setTemperature([localValues.temperature]);
+      }
+
+      // Refetch the bot data to ensure UI is synchronized
+      console.log('🟣 Refetching bot data...');
+      const refetchResult = await refetch();
+      console.log('🟣 Refetch result:', refetchResult);
 
       toast({
         title: "Configurações salvas",
@@ -171,7 +251,7 @@ export default function AssistantView() {
       });
 
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('🔴 Error saving settings:', error);
       toast({
         title: "Erro ao salvar",
         description: "Não foi possível salvar as configurações.",
@@ -200,6 +280,38 @@ export default function AssistantView() {
       description: "O novo prompt foi aplicado com sucesso. Você pode testá-lo na aba de teste.",
       duration: 5000,
     });
+  };
+
+  const handleSaveCompany = async (companyInfo: {
+    name: string;
+    address: string;
+    website: string;
+    instagram: string;
+    businessHours: string;
+  }) => {
+    setCompanyName(companyInfo.name);
+    setCompanyAddress(companyInfo.address);
+    setCompanyWebsite(companyInfo.website);
+    setCompanyInstagram(companyInfo.instagram);
+    setCompanyBusinessHours(companyInfo.businessHours);
+
+    if (!id || id === 'new') return;
+
+    try {
+      await updateBotMutation.mutateAsync({
+        botId: id,
+        updates: {
+          company_name: companyInfo.name,
+          company_address: companyInfo.address,
+          company_website: companyInfo.website,
+          company_instagram: companyInfo.instagram,
+          company_business_hours: companyInfo.businessHours,
+        }
+      });
+    } catch (error) {
+      console.error('Error saving company info:', error);
+      throw error;
+    }
   };
 
   if (loading && !isNewBot) {
@@ -308,12 +420,49 @@ export default function AssistantView() {
               }
             }}
             updateAssistant={(updates) => {
-              if (updates.name !== undefined) setAssistantName(updates.name);
-              if (updates.description !== undefined) setAssistantDescription(updates.description);
-              if (updates.temperature !== undefined) setTemperature([updates.temperature]);
-              if (updates.active !== undefined) setAssistantStatus(updates.active ? 'active' : 'inactive');
+              console.log('🟢 AssistantView.updateAssistant called with:', updates);
+              console.log('🟢 Current states before update:', { 
+                assistantName, 
+                assistantDescription, 
+                temperature: temperature[0], 
+                assistantStatus 
+              });
+              
+              if (updates.name !== undefined) {
+                console.log('🟢 Updating assistantName:', updates.name);
+                setAssistantName(updates.name);
+              }
+              if (updates.description !== undefined) {
+                console.log('🟢 Updating assistantDescription:', updates.description);
+                setAssistantDescription(updates.description);
+              }
+              if (updates.temperature !== undefined) {
+                console.log('🟢 Updating temperature:', updates.temperature);
+                setTemperature([updates.temperature]);
+              }
+              if (updates.active !== undefined) {
+                console.log('🟢 Updating assistantStatus:', updates.active ? 'active' : 'inactive');
+                setAssistantStatus(updates.active ? 'active' : 'inactive');
+              }
+              
+              console.log('🟢 AssistantView.updateAssistant completed');
             }}
             onSave={saveSettings}
+          />
+        );
+      
+      case 'company':
+        return (
+          <CompanyContent
+            assistantId={id || ''}
+            companyInfo={{
+              company_name: companyName,
+              company_address: companyAddress,
+              company_website: companyWebsite,
+              company_instagram: companyInstagram,
+              company_business_hours: companyBusinessHours,
+            }}
+            onSave={handleSaveCompany}
           />
         );
       
