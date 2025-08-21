@@ -41,7 +41,6 @@ export default function Auth() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-20 w-72 h-72 konver-gradient-primary rounded-full opacity-5 blur-3xl"></div>
         <div className="absolute bottom-20 right-20 w-96 h-96 konver-gradient-accent rounded-full opacity-5 blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] konver-gradient-warm rounded-full opacity-3 blur-3xl"></div>
       </div>
       
       <div className="w-full max-w-md space-y-8 relative z-10 konver-animate-in">
@@ -53,12 +52,7 @@ export default function Auth() {
           <h1 className="text-4xl font-bold konver-text-gradient mb-3">
             konver
           </h1>
-          <p className="text-base text-muted-foreground/90 leading-relaxed">
-            {isLogin 
-              ? "Welcome back! Sign in to continue building intelligent conversations." 
-              : "Join thousands creating the future of AI-powered conversations."
-            }
-          </p>
+       
         </div>
 
         {/* Enhanced Auth Card */}
@@ -67,12 +61,12 @@ export default function Auth() {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 rounded-t-xl"></div>
             <div className="relative z-10">
               <CardTitle className="text-2xl font-semibold text-foreground mb-2">
-                {isLogin ? "Welcome back" : "Get started"}
+                {isLogin ? "Bem-vindo de volta" : "Comece agora"}
               </CardTitle>
               <CardDescription className="text-muted-foreground/90 text-base">
                 {isLogin 
-                  ? "Access your AI assistant dashboard and continue your journey" 
-                  : "Start creating intelligent assistants that transform conversations"
+                  ? "Acesse seu painel de assistentes e otimize seu atendimento" 
+                  : "Comece a criar assistentes inteligentes que transformam conversas"
                 }
               </CardDescription>
             </div>
@@ -82,14 +76,14 @@ export default function Auth() {
               {!isLogin && (
                 <div className="space-y-3 konver-animate-scale-in" style={{ animationDelay: '100ms' }}>
                   <Label htmlFor="fullName" className="text-sm font-semibold text-foreground">
-                    Full Name
+                    Nome Completo
                   </Label>
                   <div className="relative group">
                     <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="Enter your full name"
+                      placeholder="Digite seu nome completo"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required={!isLogin}
@@ -101,14 +95,14 @@ export default function Auth() {
               
               <div className="space-y-3 konver-animate-scale-in" style={{ animationDelay: !isLogin ? '200ms' : '100ms' }}>
                 <Label htmlFor="email" className="text-sm font-semibold text-foreground">
-                  Email Address
+                  Endereço de Email
                 </Label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder="Digite seu endereço de email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -119,14 +113,14 @@ export default function Auth() {
               
               <div className="space-y-3 konver-animate-scale-in" style={{ animationDelay: !isLogin ? '300ms' : '200ms' }}>
                 <Label htmlFor="password" className="text-sm font-semibold text-foreground">
-                  Password
+                  Senha
                 </Label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Digite sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -145,10 +139,10 @@ export default function Auth() {
                   ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      {isLogin ? "Signing in..." : "Creating account..."}
+                      {isLogin ? "Entrando..." : "Criando conta..."}
                     </div>
                   ) 
-                  : (isLogin ? "Sign in to Dashboard" : "Create Account")
+                  : (isLogin ? "Entrar" : "Criar Conta")
                 }
               </Button>
             </form>
@@ -160,8 +154,8 @@ export default function Auth() {
                 className="konver-hover-subtle text-base font-medium text-muted-foreground hover:text-foreground px-6 py-2"
               >
                 {isLogin 
-                  ? "Don't have an account? Sign up" 
-                  : "Already have an account? Sign in"
+                  ? "Não tem uma conta? Cadastre-se" 
+                  : "Já tem uma conta? Entre"
                 }
               </Button>
             </div>
@@ -171,14 +165,14 @@ export default function Auth() {
         {/* Enhanced Footer */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/60">
-            <span>Privacy Policy</span>
+            <span>Política de Privacidade</span>
             <span>•</span>
-            <span>Terms of Service</span>
+            <span>Termos de Serviço</span>
             <span>•</span>
-            <span>Support</span>
+            <span>Suporte</span>
           </div>
           <p className="text-xs text-muted-foreground/50">
-            © 2024 Konver. Empowering conversations with AI.
+            © 2024 Konver. Potencializando conversas com IA.
           </p>
         </div>
       </div>
