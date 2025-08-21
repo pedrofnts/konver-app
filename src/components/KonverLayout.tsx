@@ -10,7 +10,8 @@ import {
   LogOut, 
   User,
   Home,
-  ChevronRight
+  ChevronRight,
+  CreditCard
 } from "lucide-react";
 import { AssistantData } from "@/types/assistant";
 
@@ -48,11 +49,11 @@ export default function KonverLayout({
         <div className="container flex h-14 items-center justify-between">
           {/* Logo and Navigation */}
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md ">
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-foreground">
+              <h1 className="text-xl font-bold text-foreground hover:text-primary transition-colors">
                 konver
               </h1>
             </div>
@@ -104,7 +105,7 @@ export default function KonverLayout({
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative h-10 w-10 rounded-full hover:bg-accent/10">
+                <Button variant="ghost" size="sm" className="relative h-10 w-10 rounded-full hover:bg-accent/10 focus:ring-0 focus:ring-offset-0">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary text-white text-sm font-semibold shadow-md">
                       {user?.email?.charAt(0).toUpperCase() || 'U'}
@@ -131,14 +132,28 @@ export default function KonverLayout({
                 </div>
                 
                 <div className="p-2">
-                  <DropdownMenuItem className="hover:bg-accent/10 cursor-pointer rounded-lg mb-1">
+                  <DropdownMenuItem 
+                    className="hover:bg-accent/10 cursor-pointer rounded-lg mb-1"
+                    onClick={() => navigate('/profile')}
+                  >
                     <User className="mr-3 h-4 w-4 text-primary" />
-                    <span className="font-medium">Profile</span>
+                    <span className="font-medium">Perfil</span>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuItem className="hover:bg-accent/10 cursor-pointer rounded-lg mb-1">
+                  <DropdownMenuItem 
+                    className="hover:bg-accent/10 cursor-pointer rounded-lg mb-1"
+                    onClick={() => navigate('/settings')}
+                  >
                     <Settings className="mr-3 h-4 w-4 text-primary" />
-                    <span className="font-medium">Settings</span>
+                    <span className="font-medium">Configurações</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="hover:bg-accent/10 cursor-pointer rounded-lg mb-1"
+                    onClick={() => navigate('/subscription')}
+                  >
+                    <CreditCard className="mr-3 h-4 w-4 text-primary" />
+                    <span className="font-medium">Assinatura</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuSeparator className="my-2" />
@@ -148,7 +163,7 @@ export default function KonverLayout({
                     onClick={handleSignOut}
                   >
                     <LogOut className="mr-3 h-4 w-4" />
-                    <span className="font-medium">Sign out</span>
+                    <span className="font-medium">Sair</span>
                   </DropdownMenuItem>
                 </div>
               </DropdownMenuContent>
