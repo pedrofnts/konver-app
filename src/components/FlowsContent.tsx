@@ -57,35 +57,34 @@ const FlowCard: React.FC<FlowCardProps> = ({
   const hasStop = flow.actions?.some(action => action.action_type === 'stop_conversation');
 
   return (
-    <div className="konver-glass-card rounded-xl p-6 transition-all duration-200 hover:shadow-lg group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+    <div className="konver-glass-card rounded-xl p-4 transition-all duration-200 hover:shadow-lg group cursor-pointer" onClick={() => onEdit(flow)}>
+      {/* Header with title and controls */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
             flow.is_active 
               ? 'konver-gradient-primary shadow-sm' 
               : 'bg-muted'
           }`}>
-            <GitBranch className={`w-5 h-5 ${
+            <GitBranch className={`w-4 h-4 ${
               flow.is_active ? 'text-white' : 'text-muted-foreground'
             }`} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{flow.name}</h3>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {flow.description || flow.intent_description}
-            </p>
+            <h3 className="font-semibold text-foreground truncate text-sm">{flow.name}</h3>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <Switch
             checked={flow.is_active}
             onCheckedChange={(checked) => onToggleStatus(flow.id, checked)}
             disabled={loading}
+            size="sm"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
+              <Button variant="ghost" size="sm" className="w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -111,65 +110,47 @@ const FlowCard: React.FC<FlowCardProps> = ({
         </div>
       </div>
 
-      <div className="space-y-3">
-        {/* Intent Description */}
-        <div className="konver-glass-subtle rounded-lg p-3">
-          <p className="text-sm text-muted-foreground mb-2">Intenção detectada:</p>
-          <p className="text-sm font-medium text-foreground">"{flow.intent_description}"</p>
-        </div>
+      {/* Intent Description - more compact */}
+      <div className="mb-3">
+        <p className="text-xs text-muted-foreground mb-1">Intenção:</p>
+        <p className="text-sm text-foreground line-clamp-2 leading-relaxed">"{flow.intent_description}"</p>
+      </div>
 
-        {/* Actions Summary */}
-        {actionsCount > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Ações configuradas ({actionsCount})
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {hasWhatsApp && (
-                <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-700 border-green-500/20">
-                  <MessageCircle className="w-3 h-3 mr-1" />
-                  WhatsApp
-                </Badge>
-              )}
-              {hasKommo && (
-                <Badge variant="secondary" className="text-xs bg-orange-500/10 text-orange-700 border-orange-500/20">
-                  <Building2 className="w-3 h-3 mr-1" />
-                  Kommo
-                </Badge>
-              )}
-              {hasStop && (
-                <Badge variant="secondary" className="text-xs bg-red-500/10 text-red-700 border-red-500/20">
-                  <StopCircle className="w-3 h-3 mr-1" />
-                  Parar
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Status and Priority */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          <div className="flex items-center gap-4">
-            <Badge variant={flow.is_active ? "default" : "secondary"} className="text-xs">
-              {flow.is_active ? 'Ativo' : 'Inativo'}
-            </Badge>
-            {flow.priority > 0 && (
-              <span className="text-xs text-muted-foreground">
-                Prioridade: {flow.priority}
-              </span>
+      {/* Actions Summary - more compact */}
+      {actionsCount > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-1">
+            {hasWhatsApp && (
+              <Badge variant="secondary" className="text-xs px-2 py-1 bg-green-500/10 text-green-700 border-green-500/20">
+                <MessageCircle className="w-3 h-3 mr-1" />
+                WhatsApp
+              </Badge>
+            )}
+            {hasKommo && (
+              <Badge variant="secondary" className="text-xs px-2 py-1 bg-orange-500/10 text-orange-700 border-orange-500/20">
+                <Building2 className="w-3 h-3 mr-1" />
+                Kommo
+              </Badge>
+            )}
+            {hasStop && (
+              <Badge variant="secondary" className="text-xs px-2 py-1 bg-red-500/10 text-red-700 border-red-500/20">
+                <StopCircle className="w-3 h-3 mr-1" />
+                Parar
+              </Badge>
             )}
           </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(flow)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+          <span className="text-xs text-muted-foreground">
+            {actionsCount} ação{actionsCount > 1 ? 'ões' : ''}
+          </span>
         </div>
-      </div>
+      )}
+      
+      {actionsCount === 0 && (
+        <div className="text-center py-2">
+          <p className="text-xs text-muted-foreground">Nenhuma ação configurada</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -243,14 +224,12 @@ export default function FlowsContent({ assistantId }: FlowsContentProps) {
         icon={<GitBranch className="w-5 h-5 text-white" />}
         compact={true}
         actions={[
-          <Button
-            key="create"
-            onClick={handleCreateNewFlow}
-            className="bg-primary hover:bg-primary/90 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
-          >
-            <Plus className="w-4 h-4 mr-2 text-white" />
-            Criar Fluxo
-          </Button>
+          {
+            label: "Criar Fluxo",
+            icon: <Plus className="w-4 h-4" />,
+            onClick: handleCreateNewFlow,
+            variant: "default" as const
+          }
         ]}
         loading={isLoading}
         className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
@@ -278,15 +257,15 @@ export default function FlowsContent({ assistantId }: FlowsContentProps) {
                       </div>
                       <Button
                         onClick={handleCreateNewFlow}
-                        className="bg-primary hover:bg-primary/90 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200 mt-6"
+                        className="konver-button-primary shadow-md hover:shadow-lg transition-all duration-200 mt-6"
                       >
-                        <Plus className="w-4 h-4 mr-2 text-white" />
+                        <Plus className="w-4 h-4 mr-2" />
                         Criar Primeiro Fluxo
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     {flows.map((flow) => (
                       <FlowCard
                         key={flow.id}

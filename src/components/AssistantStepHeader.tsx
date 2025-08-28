@@ -69,21 +69,21 @@ MetricCard.displayName = 'MetricCard';
 const ActionButton = memo<{ action: StepAction }>(({ action }) => {
   const getVariantClasses = () => {
     switch (action.variant) {
-      case 'default': return 'konver-button-primary';
-      case 'secondary': return 'konver-button-secondary'; 
-      case 'outline': return 'konver-button-secondary';
-      case 'destructive': return 'konver-button-primary bg-destructive hover:bg-destructive/90';
-      case 'ghost': return 'konver-button-ghost';
-      default: return 'konver-button-secondary';
+      case 'default': return 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md';
+      case 'secondary': return 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'; 
+      case 'outline': return 'border border-input bg-background hover:bg-accent hover:text-accent-foreground';
+      case 'destructive': return 'bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-sm';
+      case 'ghost': return 'hover:bg-accent hover:text-accent-foreground';
+      default: return 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md';
     }
   };
 
   return (
     <Button
-      variant={action.variant || "secondary"}
+      variant="ghost"
       onClick={action.onClick}
       disabled={action.disabled || action.loading}
-      className={`${getVariantClasses()} konver-hover-subtle konver-focus transition-all duration-200 ${action.className || ''}`}
+      className={`${getVariantClasses()} font-medium transition-all duration-200 ${action.className || ''}`}
     >
       {action.loading ? (
         <Loader2 className="w-4 h-4 animate-spin mr-2" />

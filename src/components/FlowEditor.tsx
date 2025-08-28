@@ -107,10 +107,8 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
 
   // Form states
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
   const [intentDescription, setIntentDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
-  const [priority, setPriority] = useState(0);
   const [actions, setActions] = useState<FlowAction[]>([]);
   const [originalActions, setOriginalActions] = useState<FlowAction[]>([]);
 
@@ -129,19 +127,15 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
   useEffect(() => {
     if (flow) {
       setName(flow.name);
-      setDescription(flow.description || '');
       setIntentDescription(flow.intent_description);
       setIsActive(flow.is_active);
-      setPriority(flow.priority);
       setActions(flow.actions || []);
       setOriginalActions(flow.actions || []);
     } else {
       // Reset form for new flow
       setName('');
-      setDescription('');
       setIntentDescription('');
       setIsActive(true);
-      setPriority(0);
       setActions([]);
       setOriginalActions([]);
       setCurrentStep(1);
@@ -248,10 +242,8 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
         // Update existing flow
         const updateData: UpdateFlowData = {
           name,
-          description: description || undefined,
           intent_description: intentDescription,
           is_active: isActive,
-          priority,
         };
         
         savedFlow = await updateFlowMutation.mutateAsync({
@@ -263,10 +255,8 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
         const createData: CreateFlowData = {
           bot_id: assistantId,
           name,
-          description: description || undefined,
           intent_description: intentDescription,
           is_active: isActive,
-          priority,
         };
         
         savedFlow = await createFlowMutation.mutateAsync(createData);
@@ -334,19 +324,19 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border/50">
+        <div className="flex items-center justify-between p-4 border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 konver-gradient-primary rounded-lg flex items-center justify-center shadow-sm">
-              <GitBranch className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 konver-gradient-primary rounded-lg flex items-center justify-center shadow-sm">
+              <GitBranch className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-lg font-semibold">
                 {flow ? 'Editar Fluxo' : 'Criar Novo Fluxo'}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Configure automações baseadas em intenções do usuário
               </p>
             </div>
@@ -358,70 +348,52 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
         </div>
 
         {/* Steps Navigation */}
-        <div className="px-6 py-4 bg-muted/20">
-          <div className="flex items-center gap-4">
+        <div className="px-4 py-3 bg-muted/10 border-b border-border/30">
+          <div className="flex items-center justify-center gap-8">
             <Button
-              variant={currentStep === 1 ? "default" : "outline"}
+              variant={currentStep === 1 ? "default" : "ghost"}
               size="sm"
               onClick={() => setCurrentStep(1)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-sm"
             >
-              <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">1</span>
+              <span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center ${
+                currentStep === 1 
+                  ? 'bg-primary text-white' 
+                  : 'bg-muted text-muted-foreground'
+              }`}>1</span>
               Configurações
             </Button>
-            <div className="h-px bg-border flex-1" />
+            <div className="h-px bg-border flex-1 max-w-24" />
             <Button
-              variant={currentStep === 2 ? "default" : "outline"}
+              variant={currentStep === 2 ? "default" : "ghost"}
               size="sm"
               onClick={() => validateStep1() && setCurrentStep(2)}
               disabled={!validateStep1()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-sm"
             >
-              <span className="w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">2</span>
+              <span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center ${
+                currentStep === 2 
+                  ? 'bg-primary text-white' 
+                  : validateStep1() 
+                    ? 'bg-muted text-muted-foreground'
+                    : 'bg-muted/50 text-muted-foreground/50'
+              }`}>2</span>
               Ações
             </Button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4">
           {currentStep === 1 ? (
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nome do Fluxo *</Label>
-                    <Input
-                      id="name"
-                      placeholder="Ex: Agendamento de Consulta"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">Prioridade</Label>
-                    <Input
-                      id="priority"
-                      type="number"
-                      placeholder="0"
-                      value={priority}
-                      onChange={(e) => setPriority(Number(e.target.value))}
-                      min={0}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Maior número = maior prioridade
-                    </p>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descrição (opcional)</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Descreva o que este fluxo faz..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={2}
+                  <Label htmlFor="name">Nome do Fluxo *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Ex: Agendamento de Consulta"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
 
@@ -449,36 +421,36 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
                 </div>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Add Action Buttons */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Ações do Fluxo</h3>
-                  <div className="flex flex-wrap gap-3">
+                <div className="space-y-3">
+                  <h3 className="text-base font-medium">Ações do Fluxo</h3>
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => addAction('whatsapp_message')}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 text-xs"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      Enviar WhatsApp
+                      <MessageCircle className="w-3 h-3" />
+                      WhatsApp
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => addAction('kommo_field_update')}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 text-xs"
                     >
-                      <Building2 className="w-4 h-4" />
-                      Atualizar Kommo
+                      <Building2 className="w-3 h-3" />
+                      Kommo
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => addAction('stop_conversation')}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 text-xs"
                     >
-                      <StopCircle className="w-4 h-4" />
+                      <StopCircle className="w-3 h-3" />
                       Parar Conversa
                     </Button>
                   </div>
@@ -486,13 +458,13 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
 
                 {/* Actions List */}
                 {actions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <GitBranch className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Nenhuma ação configurada ainda.</p>
-                    <p className="text-sm">Clique nos botões acima para adicionar ações.</p>
+                  <div className="text-center py-6 text-muted-foreground">
+                    <GitBranch className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">Nenhuma ação configurada ainda.</p>
+                    <p className="text-xs">Clique nos botões acima para adicionar ações.</p>
                   </div>
                 ) : (
-                  <ScrollArea className="h-[400px]">
+                  <ScrollArea className="h-[350px]">
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
@@ -502,7 +474,7 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
                         items={actions.map(a => a.id)}
                         strategy={verticalListSortingStrategy}
                       >
-                        <div className="space-y-4">
+                        <div className="space-y-3 pr-2">
                           {actions.map((action, index) => (
                             <SortableActionCard
                               key={action.id}
@@ -523,18 +495,19 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-border/50">
-          <div className="text-sm text-muted-foreground">
-            {currentStep === 1 ? 'Passo 1 de 2: Configurações básicas' : 'Passo 2 de 2: Configurar ações'}
+        <div className="flex items-center justify-between p-4 border-t border-border/50 bg-muted/5">
+          <div className="text-xs text-muted-foreground">
+            {currentStep === 1 ? 'Passo 1 de 2' : 'Passo 2 de 2'}
           </div>
           
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={onClose}>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={onClose}>
               Cancelar
             </Button>
             
             {currentStep === 1 ? (
               <Button
+                size="sm"
                 onClick={() => setCurrentStep(2)}
                 disabled={!validateStep1()}
               >
@@ -543,25 +516,27 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setCurrentStep(1)}
                 >
                   Voltar
                 </Button>
                 <Button
+                  size="sm"
                   onClick={handleSave}
                   disabled={!validateStep2() || isSaving}
-                  className="konver-button-primary"
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-3 h-3 mr-2 animate-spin" />
                       Salvando...
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4 mr-2" />
-                      {flow ? 'Atualizar' : 'Criar'} Fluxo
+                      <Save className="w-3 h-3 mr-2" />
+                      {flow ? 'Atualizar' : 'Criar'}
                     </>
                   )}
                 </Button>
