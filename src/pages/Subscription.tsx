@@ -31,7 +31,7 @@ export default function Subscription() {
     status: "active",
     currentPeriodStart: "2024-01-01",
     currentPeriodEnd: "2024-02-01",
-    price: 49.90,
+    price: 249.90,
     currency: "BRL",
     assistants: {
       used: 8,
@@ -51,21 +51,21 @@ export default function Subscription() {
     {
       id: "inv_001",
       date: "2024-01-01",
-      amount: 49.90,
+      amount: 249.90,
       status: "paid",
       downloadUrl: "#"
     },
     {
       id: "inv_002", 
       date: "2023-12-01",
-      amount: 49.90,
+      amount: 249.90,
       status: "paid",
       downloadUrl: "#"
     },
     {
       id: "inv_003",
       date: "2023-11-01", 
-      amount: 49.90,
+      amount: 249.90,
       status: "paid",
       downloadUrl: "#"
     }

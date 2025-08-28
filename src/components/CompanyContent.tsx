@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, Globe, Instagram, Clock, MapPin, Save, Info } from 'lucide-react';
+import { Building2, Globe, Instagram, Clock, MapPin, Save, Info, Users, Stethoscope } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,8 @@ interface CompanyInfo {
   website: string;
   instagram: string;
   businessHours: string;
+  professionals: string;
+  procedures: string;
 }
 
 interface CompanyContentProps {
@@ -25,6 +27,8 @@ interface CompanyContentProps {
     company_website?: string | null;
     company_instagram?: string | null;
     company_business_hours?: string | null;
+    company_professionals?: string | null;
+    company_procedures?: string | null;
   };
   onSave?: (companyInfo: CompanyInfo) => Promise<void>;
 }
@@ -50,7 +54,9 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
     address: '',
     website: '',
     instagram: '',
-    businessHours: ''
+    businessHours: '',
+    professionals: '',
+    procedures: ''
   });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -63,7 +69,9 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
         address: companyInfo.company_address || '',
         website: companyInfo.company_website || '',
         instagram: companyInfo.company_instagram || '',
-        businessHours: companyInfo.company_business_hours || ''
+        businessHours: companyInfo.company_business_hours || '',
+        professionals: companyInfo.company_professionals || '',
+        procedures: companyInfo.company_procedures || ''
       });
     }
   }, [companyInfo]);
@@ -264,21 +272,64 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
             </div>
           </Card>
 
-          {/* Information Usage */}
-          <Card className="konver-card p-6 bg-muted/20 border-muted/30">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center">
-                <Info className="w-4 h-4" />
+          {/* Profissionais */}
+          <Card className="konver-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 konver-gradient-primary rounded-xl flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
               </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-foreground mb-2">Como essas informações são usadas</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• <strong>Nome da Empresa:</strong> Usado nas apresentações e assinaturas do assistente</li>
-                  <li>• <strong>Endereço:</strong> Fornecido quando clientes perguntam sobre localização</li>
-                  <li>• <strong>Website:</strong> Compartilhado para mais informações sobre produtos/serviços</li>
-                  <li>• <strong>Instagram:</strong> Usado para divulgar redes sociais e conteúdo visual</li>
-                  <li>• <strong>Horário:</strong> Informa clientes sobre disponibilidade de atendimento</li>
-                </ul>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Profissionais</h3>
+                <p className="text-sm text-muted-foreground">Informações sobre os profissionais da empresa</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="professionals" className="text-sm font-medium">
+                Profissionais (nome, registro, especialidade)
+              </Label>
+              <Textarea
+                id="professionals"
+                placeholder="ex: Dr. João Silva - CRM 12345 - Cardiologista&#10;Dra. Maria Santos - CRM 67890 - Dermatologista&#10;Dr. Pedro Costa - CRO 11111 - Ortodontista"
+                value={formData.professionals}
+                onChange={(e) => handleInputChange('professionals', e.target.value)}
+                className="konver-input resize-none"
+                rows={6}
+              />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Info className="w-3 h-3" />
+                <span>Liste um profissional por linha com nome, registro profissional e especialidade</span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Procedimentos Realizados */}
+          <Card className="konver-card p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 konver-gradient-accent rounded-xl flex items-center justify-center">
+                <Stethoscope className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Procedimentos Realizados</h3>
+                <p className="text-sm text-muted-foreground">Lista dos procedimentos e serviços oferecidos</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="procedures" className="text-sm font-medium">
+                Procedimentos e Serviços
+              </Label>
+              <Textarea
+                id="procedures"
+                placeholder="ex: Consulta Cardiológica&#10;Eletrocardiograma&#10;Teste Ergométrico&#10;Ecocardiograma&#10;Holter 24h&#10;Consulta de Retorno"
+                value={formData.procedures}
+                onChange={(e) => handleInputChange('procedures', e.target.value)}
+                className="konver-input resize-none"
+                rows={8}
+              />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Info className="w-3 h-3" />
+                <span>Liste um procedimento por linha para melhor organização</span>
               </div>
             </div>
           </Card>

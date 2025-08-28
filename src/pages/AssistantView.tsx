@@ -14,6 +14,7 @@ import KnowledgeBaseContent from "@/components/KnowledgeBaseContent";
 import ConversationsContent from "@/components/ConversationsContent";
 import BotFeedbackManagement from "@/components/BotFeedbackManagement";
 import IntegrationsContent from "@/components/IntegrationsContent";
+import FlowsContent from "@/components/FlowsContent";
 import WhatsAppConnection from "@/components/WhatsAppConnection";
 import CompanyContent from "@/components/CompanyContent";
 import { AssistantData } from "@/types/assistant";
@@ -469,6 +470,9 @@ export default function AssistantView() {
       
       case 'integrations':
         return isNewBot ? null : <IntegrationsContent assistantId={id || ''} />;
+      
+      case 'flows':
+        return isNewBot ? null : <FlowsContent assistantId={id || ''} />;
       
       case 'knowledge':
         return isNewBot ? null : <KnowledgeBaseContent assistantId={id || ''} />;

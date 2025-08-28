@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  Sliders
+  Sliders,
+  Clock
 } from "lucide-react";
 
 interface PromptVersion {
@@ -37,6 +38,7 @@ interface Assistant {
   description: string;
   temperature: number;
   active: boolean;
+  wait_time?: number;
   prompts: {
     principal: PromptVersion[];
     triagem: PromptVersion[];
@@ -49,7 +51,7 @@ interface SettingsContentProps {
   updateAssistant: (updates: Partial<Assistant>) => void;
   onCreatePromptVersion?: (type: 'principal' | 'triagem' | 'think') => void;
   onActivatePromptVersion?: (type: 'principal' | 'triagem' | 'think', versionId: string) => void;
-  onSave?: (localValues?: { name: string; description: string; temperature: number }) => void;
+  onSave?: (localValues?: { name: string; description: string; temperature: number; wait_time?: number }) => void;
 }
 
 export default function SettingsContent({ 
@@ -62,6 +64,7 @@ export default function SettingsContent({
   const [localName, setLocalName] = useState(assistant.name);
   const [localDescription, setLocalDescription] = useState(assistant.description);
   const [localTemperature, setLocalTemperature] = useState([assistant.temperature]);
+  const [localWaitTime, setLocalWaitTime] = useState([assistant.wait_time || 40]);
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync local state when assistant prop changes
@@ -70,16 +73,18 @@ export default function SettingsContent({
     console.log('🔵 Assistant prop changed:', { 
       name: assistant.name, 
       description: assistant.description, 
-      temperature: assistant.temperature 
+      temperature: assistant.temperature,
+      wait_time: assistant.wait_time
     });
-    console.log('🔵 Previous local state:', { localName, localDescription, localTemperature });
+    console.log('🔵 Previous local state:', { localName, localDescription, localTemperature, localWaitTime });
     
     setLocalName(assistant.name);
     setLocalDescription(assistant.description);
     setLocalTemperature([assistant.temperature]);
+    setLocalWaitTime([assistant.wait_time || 40]);
     
     console.log('🔵 Local state updated to match assistant prop');
-  }, [assistant.name, assistant.description, assistant.temperature]);
+  }, [assistant.name, assistant.description, assistant.temperature, assistant.wait_time]);
 
   const handleSave = async () => {
     console.log('🔵 SettingsContent.handleSave called');
@@ -92,7 +97,8 @@ export default function SettingsContent({
     const updateData = {
       name: localName,
       description: localDescription,
-      temperature: localTemperature[0]
+      temperature: localTemperature[0],
+      wait_time: localWaitTime[0]
     };
     console.log('🔵 Calling updateAssistant with:', updateData);
     updateAssistant(updateData);
@@ -120,6 +126,7 @@ export default function SettingsContent({
     setLocalName(assistant.name);
     setLocalDescription(assistant.description);
     setLocalTemperature([assistant.temperature]);
+    setLocalWaitTime([assistant.wait_time || 40]);
   };
 
   // Get active prompt count
@@ -147,10 +154,16 @@ export default function SettingsContent({
 
   const headerMetrics = [
     {
-      label: "Temperature",
+      label: "Temperatura",
       value: localTemperature[0].toFixed(1),
       icon: <Thermometer className="w-4 h-4" />,
       color: "accent" as const
+    },
+    {
+      label: "Tempo de Espera",
+      value: `${localWaitTime[0]}s`,
+      icon: <Clock className="w-4 h-4" />,
+      color: "primary" as const
     },
     {
       label: "Status",
@@ -162,7 +175,7 @@ export default function SettingsContent({
       label: "Prompts Ativos",
       value: `${activePrompts}/3`,
       icon: <MessageSquare className="w-4 h-4" />,
-      color: "primary" as const
+      color: "secondary" as const
     }
   ];
 
@@ -182,8 +195,8 @@ export default function SettingsContent({
   return (
     <div className="flex flex-col h-full">
       <AssistantStepHeader
-        title="Assistant Settings"
-        description="Configure your assistant's basic settings and behavior"
+        title="Configurações do Assistente"
+        description="Configure as definições básicas e comportamento do seu assistente"
         icon={<Settings className="w-5 h-5 text-white" />}
         compact={true}
         actions={headerActions}
@@ -263,10 +276,10 @@ export default function SettingsContent({
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <Label htmlFor="temperature" className="text-sm font-medium">Temperature</Label>
+                    <Label htmlFor="temperature" className="text-sm font-medium">Temperatura</Label>
                     <Badge variant="outline" className="bg-accent/5 text-accent border-accent/20">
                       {localTemperature[0].toFixed(1)}
                     </Badge>
@@ -284,6 +297,31 @@ export default function SettingsContent({
                     <span>Mais Conservador</span>
                     <span>Mais Criativo</span>
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="wait-time" className="text-sm font-medium">Tempo de Espera (segundos)</Label>
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                      {localWaitTime[0]}s
+                    </Badge>
+                  </div>
+                  <Slider
+                    id="wait-time"
+                    min={20}
+                    max={180}
+                    step={5}
+                    value={localWaitTime}
+                    onValueChange={setLocalWaitTime}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>20s</span>
+                    <span>180s</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Tempo que o assistente espera antes de processar mensagens em sequência
+                  </p>
                 </div>
               </div>
             </div>
@@ -371,22 +409,6 @@ export default function SettingsContent({
               )}
             </div>
 
-                {/* Help Section */}
-                <div className="konver-card rounded-xl p-6 bg-muted/20 border-muted/20">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                  <MessageSquare className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium mb-2">Dicas de Configuração</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• <strong>Temperature baixa (0.0-0.3)</strong>: Respostas mais consistentes e previsíveis</li>
-                    <li>• <strong>Temperature média (0.4-0.7)</strong>: Equilíbrio entre criatividade e consistência</li>
-                    <li>• <strong>Temperature alta (0.8-2.0)</strong>: Respostas mais criativas e variadas</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
               </div>
               </div>
             </ScrollArea>

@@ -11,7 +11,8 @@ import {
   MoreHorizontal,
   Plug,
   Building2,
-  MessageCircle
+  MessageCircle,
+  GitBranch
 } from "lucide-react";
 
 interface AssistantSidebarProps {
@@ -51,6 +52,11 @@ const navigationItems = [
     id: 'integrations',
     label: 'Integrações',
     icon: Plug
+  },
+  {
+    id: 'flows',
+    label: 'Fluxos',
+    icon: GitBranch
   },
   {
     id: 'knowledge',

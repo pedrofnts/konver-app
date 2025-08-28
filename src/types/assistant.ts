@@ -36,4 +36,67 @@ export interface AssistantData {
   company_business_hours?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// Flow System Types
+export type FlowActionType = 'whatsapp_message' | 'kommo_field_update' | 'stop_conversation';
+
+export interface FlowActionConfig {
+  // WhatsApp Message Config
+  message?: string;
+  phone_number?: string;
+  
+  // Kommo Field Update Config
+  field_name?: string;
+  field_value?: string;
+  
+  // Stop Conversation Config
+  reason?: string;
+}
+
+export interface FlowAction {
+  id: string;
+  flow_id: string;
+  action_type: FlowActionType;
+  sequence_order: number;
+  config: FlowActionConfig;
+  created_at: string;
+}
+
+export interface Flow {
+  id: string;
+  bot_id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  intent_description: string;
+  is_active: boolean;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+  actions?: FlowAction[];
+}
+
+export interface CreateFlowData {
+  bot_id: string;
+  name: string;
+  description?: string;
+  intent_description: string;
+  is_active?: boolean;
+  priority?: number;
+}
+
+export interface UpdateFlowData {
+  name?: string;
+  description?: string;
+  intent_description?: string;
+  is_active?: boolean;
+  priority?: number;
+}
+
+export interface CreateFlowActionData {
+  flow_id: string;
+  action_type: FlowActionType;
+  sequence_order: number;
+  config: FlowActionConfig;
 } 
