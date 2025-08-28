@@ -38,7 +38,7 @@ interface IntegrationsContentProps {
 }
 
 export default function IntegrationsContent({ assistantId }: IntegrationsContentProps) {
-  const { integrations: dbIntegrations, isLoading, refetch } = useIntegrations();
+  const { integrations: dbIntegrations, isLoading, refetch } = useIntegrations(assistantId);
   const { status: whatsappStatus } = useWhatsApp({ botId: assistantId, enabled: true });
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationUIData | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -136,6 +136,7 @@ export default function IntegrationsContent({ assistantId }: IntegrationsContent
           integration={selectedIntegration}
           onSave={handleSaveIntegration}
           onClose={handleCloseConfig}
+          botId={assistantId}
         />
       );
     }

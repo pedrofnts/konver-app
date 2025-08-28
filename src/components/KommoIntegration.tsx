@@ -37,9 +37,10 @@ interface KommoIntegrationProps {
   integration: IntegrationUIData;
   onSave: (integration: IntegrationUIData) => void;
   onClose: () => void;
+  botId: string;
 }
 
-export default function KommoIntegration({ integration, onSave, onClose }: KommoIntegrationProps) {
+export default function KommoIntegration({ integration, onSave, onClose, botId }: KommoIntegrationProps) {
   const { createOrUpdateIntegration } = useIntegrations();
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
@@ -125,7 +126,7 @@ export default function KommoIntegration({ integration, onSave, onClose }: Kommo
         // Atualizar o estado local para refletir as mudanças imediatamente
         setConfig(updatedConfig);
         
-        await createOrUpdateIntegration('kommo', updatedConfig, true);
+        await createOrUpdateIntegration('kommo', updatedConfig, true, botId);
         
         const updatedIntegration: IntegrationUIData = {
           ...integration,

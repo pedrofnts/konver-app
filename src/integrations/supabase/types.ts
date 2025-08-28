@@ -194,6 +194,7 @@ export type Database = {
       }
       integrations: {
         Row: {
+          bot_id: string | null
           config: Json
           created_at: string | null
           enabled: boolean
@@ -203,6 +204,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bot_id?: string | null
           config?: Json
           created_at?: string | null
           enabled?: boolean
@@ -212,6 +214,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bot_id?: string | null
           config?: Json
           created_at?: string | null
           enabled?: boolean
@@ -220,7 +223,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "integrations_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       knowledge_base_files: {
         Row: {

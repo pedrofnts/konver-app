@@ -47,7 +47,8 @@ export interface FlowActionConfig {
   phone_number?: string;
   
   // Kommo Field Update Config
-  field_name?: string;
+  field_name?: string; // For backward compatibility
+  field_id?: number; // New: Kommo field ID
   field_value?: string;
   
   // Stop Conversation Config
@@ -99,4 +100,48 @@ export interface CreateFlowActionData {
   action_type: FlowActionType;
   sequence_order: number;
   config: FlowActionConfig;
+}
+
+// Kommo Custom Fields Types
+export interface KommoFieldEnum {
+  id: number;
+  value: string;
+  sort: number;
+}
+
+export interface KommoCustomField {
+  id: number;
+  name: string;
+  type: 'text' | 'select' | 'date' | 'date_time' | 'tracking_data' | 'file' | 'checkbox' | 'numeric';
+  account_id: number;
+  code?: string;
+  sort: number;
+  is_api_only: boolean;
+  enums?: KommoFieldEnum[] | null;
+  group_id?: string | null;
+  required_statuses: string[];
+  is_deletable: boolean;
+  is_predefined: boolean;
+  entity_type: string;
+  currency?: string | null;
+  hidden_statuses: string[];
+  _links: {
+    self: {
+      href: string;
+    };
+  };
+}
+
+export interface KommoFieldsResponse {
+  _total_items: number;
+  _page: number;
+  _page_count: number;
+  _links: {
+    self: {
+      href: string;
+    };
+  };
+  _embedded: {
+    custom_fields: KommoCustomField[];
+  };
 } 

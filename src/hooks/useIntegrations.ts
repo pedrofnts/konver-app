@@ -14,7 +14,7 @@ export interface IntegrationUIData {
   config?: Record<string, unknown>;
 }
 
-export function useIntegrations() {
+export function useIntegrations(botId?: string) {
   const { user } = useAuth();
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,10 +24,17 @@ export function useIntegrations() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('integrations')
         .select('*')
         .eq('user_id', user.id);
+
+      // If botId is provided, filter by bot_id
+      if (botId) {
+        query = query.eq('bot_id', botId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setIntegrations(data || []);
@@ -38,14 +45,17 @@ export function useIntegrations() {
     }
   };
 
-  const createOrUpdateIntegration = async (provider: string, config: KommoConfig | WhatsAppConfig, enabled = false) => {
+  const createOrUpdateIntegration = async (provider: string, config: KommoConfig | WhatsAppConfig, enabled = false, targetBotId?: string) => {
     if (!user?.id) throw new Error('User not authenticated');
+    if (!targetBotId && !botId) throw new Error('Bot ID is required for integration');
+
+    const effectiveBotId = targetBotId || botId;
 
     try {
       const { data: existingIntegration } = await supabase
         .from('integrations')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('bot_id', effectiveBotId)
         .eq('provider', provider)
         .single();
 
@@ -70,6 +80,7 @@ export function useIntegrations() {
           .from('integrations')
           .insert({
             user_id: user.id,
+            bot_id: effectiveBotId,
             provider,
             config: config as any,
             enabled
@@ -124,7 +135,7 @@ export function useIntegrations() {
     if (user?.id) {
       fetchIntegrations();
     }
-  }, [user?.id]);
+  }, [user?.id, botId]);
 
   return {
     integrations,

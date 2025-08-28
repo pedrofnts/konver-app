@@ -5,14 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FlowAction, FlowActionType, FlowActionConfig } from "@/types/assistant";
+import { useKommoFields, getKommoFieldOptions, formatKommoFieldType } from "@/hooks/useKommoFields";
 import { 
   MessageCircle, 
   Building2, 
   StopCircle, 
   Trash2, 
   GripVertical,
-  Settings
+  Settings,
+  Loader2,
+  AlertTriangle
 } from "lucide-react";
 
 interface ActionCardProps {
@@ -22,6 +26,7 @@ interface ActionCardProps {
   onDelete: () => void;
   onConfigChange: (config: FlowActionConfig) => void;
   dragHandleProps?: Record<string, unknown>;
+  botId: string;
 }
 
 const ACTION_TYPE_CONFIG = {
@@ -85,52 +90,165 @@ const WhatsAppMessageForm: React.FC<{
 const KommoFieldUpdateForm: React.FC<{
   config: FlowActionConfig;
   onConfigChange: (config: FlowActionConfig) => void;
-}> = ({ config, onConfigChange }) => {
-  const commonFields = [
-    { value: 'status', label: 'Status do Lead' },
-    { value: 'stage', label: 'Etapa do Funil' },
-    { value: 'responsible', label: 'Responsável' },
-    { value: 'tags', label: 'Tags' },
-    { value: 'notes', label: 'Observações' },
-    { value: 'custom_field_1', label: 'Campo Personalizado 1' },
-    { value: 'custom_field_2', label: 'Campo Personalizado 2' }
-  ];
+  botId: string;
+}> = ({ config, onConfigChange, botId }) => {
+  const { filteredFields, isLoading, error } = useKommoFields(botId);
+  
+  // Find selected field to show its details and options
+  const selectedField = filteredFields.find(field => field.id === config.field_id);
+
+  // Handle field selection
+  const handleFieldChange = (fieldId: string) => {
+    const field = filteredFields.find(f => f.id === parseInt(fieldId));
+    onConfigChange({ 
+      ...config, 
+      field_id: parseInt(fieldId),
+      field_name: field?.name, // Keep for backward compatibility
+      field_value: '' // Clear value when changing field
+    });
+  };
+
+  // Handle value change
+  const handleValueChange = (value: string) => {
+    onConfigChange({ ...config, field_value: value });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center py-6">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Carregando campos do Kommo...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            Erro ao carregar campos do Kommo: {error.message}
+          </AlertDescription>
+        </Alert>
+        <p className="text-xs text-muted-foreground">
+          Verifique se a integração com o Kommo está configurada corretamente.
+        </p>
+      </div>
+    );
+  }
+
+  if (filteredFields.length === 0) {
+    return (
+      <div className="space-y-4">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            Nenhum campo personalizado disponível no Kommo.
+          </AlertDescription>
+        </Alert>
+        <p className="text-xs text-muted-foreground">
+          Campos devem ter is_api_only: true e is_deletable: true para aparecerem aqui.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="field_name">Campo a Atualizar</Label>
+          <Label htmlFor="field_id">Campo a Atualizar *</Label>
           <Select 
-            value={config.field_name || ''} 
-            onValueChange={(value) => onConfigChange({ ...config, field_name: value })}
+            value={config.field_id?.toString() || ''} 
+            onValueChange={handleFieldChange}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecione o campo" />
+              <SelectValue placeholder="Selecione o campo do Kommo" />
             </SelectTrigger>
             <SelectContent>
-              {commonFields.map((field) => (
-                <SelectItem key={field.value} value={field.value}>
-                  {field.label}
+              {filteredFields.map((field) => (
+                <SelectItem key={field.id} value={field.id.toString()}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{field.name}</span>
+                    <Badge variant="secondary" className="text-xs ml-2">
+                      {formatKommoFieldType(field.type)}
+                    </Badge>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {selectedField && (
+            <p className="text-xs text-muted-foreground">
+              Tipo: {formatKommoFieldType(selectedField.type)} • ID: {selectedField.id}
+            </p>
+          )}
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="field_value">Novo Valor</Label>
-          <Input
-            id="field_value"
-            placeholder="Valor a ser definido"
-            value={config.field_value || ''}
-            onChange={(e) => onConfigChange({ ...config, field_value: e.target.value })}
-          />
+          <Label htmlFor="field_value">Novo Valor *</Label>
+          {selectedField?.type === 'select' ? (
+            <Select 
+              value={config.field_value || ''} 
+              onValueChange={handleValueChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma opção" />
+              </SelectTrigger>
+              <SelectContent>
+                {getKommoFieldOptions(selectedField).map((option) => (
+                  <SelectItem key={option.value} value={option.label}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : selectedField?.type === 'date' || selectedField?.type === 'date_time' ? (
+            <Input
+              id="field_value"
+              type={selectedField.type === 'date_time' ? 'datetime-local' : 'date'}
+              value={config.field_value || ''}
+              onChange={(e) => handleValueChange(e.target.value)}
+            />
+          ) : selectedField?.type === 'numeric' ? (
+            <Input
+              id="field_value"
+              type="number"
+              placeholder="Digite um número"
+              value={config.field_value || ''}
+              onChange={(e) => handleValueChange(e.target.value)}
+            />
+          ) : selectedField?.type === 'checkbox' ? (
+            <Select 
+              value={config.field_value || ''} 
+              onValueChange={handleValueChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="true">Sim</SelectItem>
+                <SelectItem value="false">Não</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input
+              id="field_value"
+              placeholder="Digite o valor"
+              value={config.field_value || ''}
+              onChange={(e) => handleValueChange(e.target.value)}
+            />
+          )}
         </div>
       </div>
       
       <p className="text-xs text-muted-foreground">
-        O campo selecionado será atualizado no CRM Kommo com o novo valor especificado
+        O campo "{selectedField?.name || 'selecionado'}" será atualizado no CRM Kommo com o valor especificado
       </p>
     </div>
   );
@@ -182,7 +300,8 @@ export default function ActionCard({
   onUpdate,
   onDelete,
   onConfigChange,
-  dragHandleProps
+  dragHandleProps,
+  botId
 }: ActionCardProps) {
   const actionConfig = ACTION_TYPE_CONFIG[action.action_type];
   const IconComponent = actionConfig.icon;
@@ -201,6 +320,7 @@ export default function ActionCard({
           <KommoFieldUpdateForm
             config={action.config}
             onConfigChange={onConfigChange}
+            botId={botId}
           />
         );
       case 'stop_conversation':

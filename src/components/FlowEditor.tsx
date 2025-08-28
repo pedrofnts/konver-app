@@ -70,6 +70,7 @@ interface SortableActionCardProps {
   onUpdate: (updates: Partial<FlowAction>) => void;
   onDelete: () => void;
   onConfigChange: (config: FlowActionConfig) => void;
+  botId: string;
 }
 
 const SortableActionCard: React.FC<SortableActionCardProps> = (props) => {
@@ -207,7 +208,9 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
         case 'whatsapp_message':
           return action.config.message?.trim() && action.config.phone_number?.trim();
         case 'kommo_field_update':
-          return action.config.field_name && action.config.field_value;
+          // Accept both new field_id and legacy field_name for backward compatibility
+          const hasValidField = action.config.field_id || action.config.field_name;
+          return hasValidField && action.config.field_value?.trim();
         case 'stop_conversation':
           return action.config.reason;
         default:
@@ -483,6 +486,7 @@ export default function FlowEditor({ assistantId, flow, isOpen, onClose, onSave 
                               onUpdate={(updates) => updateAction(action.id, updates)}
                               onDelete={() => deleteAction(action.id)}
                               onConfigChange={(config) => updateActionConfig(action.id, config)}
+                              botId={assistantId}
                             />
                           ))}
                         </div>
