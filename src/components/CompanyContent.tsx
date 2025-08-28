@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Building2, Globe, Instagram, Clock, MapPin, Save, Info, Users, Stethoscope } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useFormPersistence } from "@/hooks/useFormPersistence";
 import AssistantStepHeader from "./AssistantStepHeader";
 import AssistantStepContent from "./AssistantStepContent";
 
@@ -49,39 +50,41 @@ const businessHoursExamples = [
 ];
 
 export default function CompanyContent({ assistantId, companyInfo, onSave }: CompanyContentProps) {
-  const [formData, setFormData] = useState<CompanyInfo>({
-    name: '',
-    address: '',
-    website: '',
-    instagram: '',
-    businessHours: '',
-    professionals: '',
-    procedures: ''
-  });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  // Initialize form with existing data
-  useEffect(() => {
-    if (companyInfo) {
-      setFormData({
-        name: companyInfo.company_name || '',
-        address: companyInfo.company_address || '',
-        website: companyInfo.company_website || '',
-        instagram: companyInfo.company_instagram || '',
-        businessHours: companyInfo.company_business_hours || '',
-        professionals: companyInfo.company_professionals || '',
-        procedures: companyInfo.company_procedures || ''
-      });
-    }
-  }, [companyInfo]);
+  // Use form persistence hook
+  const {
+    formData,
+    updateField,
+    hasUnsavedChanges,
+    markAsSaved,
+    resetForm,
+    isDirty
+  } = useFormPersistence<CompanyInfo>({
+    storageKey: `company-info-${assistantId}`,
+    initialData: {
+      name: '',
+      address: '',
+      website: '',
+      instagram: '',
+      businessHours: '',
+      professionals: '',
+      procedures: ''
+    },
+    serverData: companyInfo ? {
+      name: companyInfo.company_name || '',
+      address: companyInfo.company_address || '',
+      website: companyInfo.company_website || '',
+      instagram: companyInfo.company_instagram || '',
+      businessHours: companyInfo.company_business_hours || '',
+      professionals: companyInfo.company_professionals || '',
+      procedures: companyInfo.company_procedures || ''
+    } : undefined
+  });
 
-  const handleInputChange = (field: keyof CompanyInfo, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+
+  // Remove the handleInputChange function as we'll use updateField directly
 
   const handleSave = async () => {
     if (!onSave) return;
@@ -89,6 +92,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
     setSaving(true);
     try {
       await onSave(formData);
+      markAsSaved(); // Clear unsaved changes and persistence
       toast({
         title: "Informações salvas",
         description: "As informações da empresa foram atualizadas com sucesso.",
@@ -109,7 +113,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
 
   const formatInstagramHandle = (value: string) => {
     // Remove @ if user adds it
-    let formatted = value.replace('@', '');
+    const formatted = value.replace('@', '');
     return formatted;
   };
 
@@ -167,7 +171,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                   id="company-name"
                   placeholder="ex: Minha Empresa Ltda"
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={(e) => updateField('name', e.target.value)}
                   className="konver-input"
                 />
               </div>
@@ -181,8 +185,8 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                   id="company-website"
                   placeholder="ex: www.minhaempresa.com.br"
                   value={formData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  onBlur={(e) => handleInputChange('website', formatWebsite(e.target.value))}
+                  onChange={(e) => updateField('website', e.target.value)}
+                  onBlur={(e) => updateField('website', formatWebsite(e.target.value))}
                   className="konver-input"
                 />
               </div>
@@ -196,7 +200,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                   id="company-address"
                   placeholder="ex: Rua das Flores, 123 - Centro - São Paulo, SP - CEP: 01234-567"
                   value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  onChange={(e) => updateField('address', e.target.value)}
                   className="konver-input resize-none"
                   rows={3}
                 />
@@ -215,7 +219,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                     id="company-instagram"
                     placeholder="minhaempresa"
                     value={formData.instagram}
-                    onChange={(e) => handleInputChange('instagram', formatInstagramHandle(e.target.value))}
+                    onChange={(e) => updateField('instagram', formatInstagramHandle(e.target.value))}
                     className="konver-input pl-8"
                   />
                 </div>
@@ -244,7 +248,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                   id="business-hours"
                   placeholder="ex: Segunda a Sexta: 9:00-18:00&#10;Sábado: 9:00-12:00&#10;Domingo: Fechado"
                   value={formData.businessHours}
-                  onChange={(e) => handleInputChange('businessHours', e.target.value)}
+                  onChange={(e) => updateField('businessHours', e.target.value)}
                   className="konver-input resize-none"
                   rows={6}
                 />
@@ -261,7 +265,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                     <div 
                       key={index}
                       className="p-3 rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-colors"
-                      onClick={() => handleInputChange('businessHours', example.hours)}
+                      onClick={() => updateField('businessHours', example.hours)}
                     >
                       <div className="font-medium text-sm text-foreground mb-1">{example.title}</div>
                       <div className="text-xs text-muted-foreground whitespace-pre-line">{example.hours}</div>
@@ -292,7 +296,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                 id="professionals"
                 placeholder="ex: Dr. João Silva - CRM 12345 - Cardiologista&#10;Dra. Maria Santos - CRM 67890 - Dermatologista&#10;Dr. Pedro Costa - CRO 11111 - Ortodontista"
                 value={formData.professionals}
-                onChange={(e) => handleInputChange('professionals', e.target.value)}
+                onChange={(e) => updateField('professionals', e.target.value)}
                 className="konver-input resize-none"
                 rows={6}
               />
@@ -323,7 +327,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
                 id="procedures"
                 placeholder="ex: Consulta Cardiológica&#10;Eletrocardiograma&#10;Teste Ergométrico&#10;Ecocardiograma&#10;Holter 24h&#10;Consulta de Retorno"
                 value={formData.procedures}
-                onChange={(e) => handleInputChange('procedures', e.target.value)}
+                onChange={(e) => updateField('procedures', e.target.value)}
                 className="konver-input resize-none"
                 rows={8}
               />

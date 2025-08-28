@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import AssistantStepHeader from "@/components/AssistantStepHeader";
 import AssistantStepContent from "@/components/AssistantStepContent";
+import { useFormPersistence } from "@/hooks/useFormPersistence";
 import { 
   Settings,
   Save,
@@ -20,7 +21,7 @@ import {
   AlertCircle,
   RefreshCw,
   Sliders,
-  Clock
+  Clock,
 } from "lucide-react";
 
 interface PromptVersion {
@@ -46,6 +47,14 @@ interface Assistant {
   };
 }
 
+interface SettingsFormData {
+  name: string;
+  description: string;
+  temperature: number;
+  wait_time: number;
+  active: boolean;
+}
+
 interface SettingsContentProps {
   assistant: Assistant;
   updateAssistant: (updates: Partial<Assistant>) => void;
@@ -61,72 +70,78 @@ export default function SettingsContent({
   onActivatePromptVersion,
   onSave
 }: SettingsContentProps) {
-  const [localName, setLocalName] = useState(assistant.name);
-  const [localDescription, setLocalDescription] = useState(assistant.description);
-  const [localTemperature, setLocalTemperature] = useState([assistant.temperature]);
-  const [localWaitTime, setLocalWaitTime] = useState([assistant.wait_time || 40]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sync local state when assistant prop changes
-  useEffect(() => {
-    console.log('🔵 SettingsContent useEffect triggered');
-    console.log('🔵 Assistant prop changed:', { 
-      name: assistant.name, 
-      description: assistant.description, 
+  // Create form persistence with smart state management
+  const {
+    formData,
+    updateField,
+    hasUnsavedChanges,
+    markAsSaved,
+    resetForm,
+    isDirty
+  } = useFormPersistence<SettingsFormData>({
+    storageKey: `assistant-settings-${assistant.id}`,
+    initialData: {
+      name: assistant.name,
+      description: assistant.description,
       temperature: assistant.temperature,
-      wait_time: assistant.wait_time
-    });
-    console.log('🔵 Previous local state:', { localName, localDescription, localTemperature, localWaitTime });
-    
-    setLocalName(assistant.name);
-    setLocalDescription(assistant.description);
-    setLocalTemperature([assistant.temperature]);
-    setLocalWaitTime([assistant.wait_time || 40]);
-    
-    console.log('🔵 Local state updated to match assistant prop');
-  }, [assistant.name, assistant.description, assistant.temperature, assistant.wait_time]);
+      wait_time: assistant.wait_time || 40,
+      active: assistant.active
+    },
+    serverData: {
+      name: assistant.name,
+      description: assistant.description,
+      temperature: assistant.temperature,
+      wait_time: assistant.wait_time || 40,
+      active: assistant.active
+    }
+  });
+
 
   const handleSave = async () => {
     console.log('🔵 SettingsContent.handleSave called');
-    console.log('🔵 Local states:', { localName, localDescription, localTemperature });
-    console.log('🔵 Assistant prop:', assistant);
+    console.log('🔵 Form data:', formData);
     
     setIsSaving(true);
     
-    // Update local states first
-    const updateData = {
-      name: localName,
-      description: localDescription,
-      temperature: localTemperature[0],
-      wait_time: localWaitTime[0]
-    };
-    console.log('🔵 Calling updateAssistant with:', updateData);
-    updateAssistant(updateData);
-    
-    // Call the actual save function if provided, passing the local values directly
-    if (onSave) {
-      try {
-        console.log('🔵 Calling onSave function with local values...');
-        await onSave(updateData); // Pass local values to onSave
-        console.log('🔵 onSave completed successfully');
-      } catch (error) {
-        console.error('🔴 Error saving:', error);
+    try {
+      // Update the assistant state in parent component
+      updateAssistant({
+        name: formData.name,
+        description: formData.description,
+        temperature: formData.temperature,
+        wait_time: formData.wait_time,
+        active: formData.active
+      });
+      
+      // Call the save function if provided
+      if (onSave) {
+        await onSave({
+          name: formData.name,
+          description: formData.description,
+          temperature: formData.temperature,
+          wait_time: formData.wait_time
+        });
+      } else {
+        // Fallback simulation
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
-    } else {
-      console.log('🟡 No onSave function provided, using fallback');
-      // Fallback simulation for when onSave is not provided
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mark as saved to clear persistence and unsaved changes flag
+      markAsSaved();
+      
+      console.log('🔵 Save completed successfully');
+    } catch (error) {
+      console.error('🔴 Error saving settings:', error);
+      throw error;
+    } finally {
+      setIsSaving(false);
     }
-    
-    setIsSaving(false);
-    console.log('🔵 SettingsContent.handleSave completed');
   };
 
   const handleReset = () => {
-    setLocalName(assistant.name);
-    setLocalDescription(assistant.description);
-    setLocalTemperature([assistant.temperature]);
-    setLocalWaitTime([assistant.wait_time || 40]);
+    resetForm(true); // Reset to server data
   };
 
   // Get active prompt count
@@ -155,21 +170,21 @@ export default function SettingsContent({
   const headerMetrics = [
     {
       label: "Temperatura",
-      value: localTemperature[0].toFixed(1),
+      value: formData.temperature.toFixed(1),
       icon: <Thermometer className="w-4 h-4" />,
       color: "accent" as const
     },
     {
       label: "Tempo de Espera",
-      value: `${localWaitTime[0]}s`,
+      value: `${formData.wait_time}s`,
       icon: <Clock className="w-4 h-4" />,
       color: "primary" as const
     },
     {
       label: "Status",
-      value: assistant.active ? "Ativo" : "Inativo",
+      value: formData.active ? "Ativo" : "Inativo",
       icon: <Power className="w-4 h-4" />,
-      color: assistant.active ? "success" : "warning" as const
+      color: formData.active ? "success" : "warning" as const
     },
     {
       label: "Prompts Ativos",
@@ -229,8 +244,8 @@ export default function SettingsContent({
                     <Label htmlFor="name" className="text-sm font-medium">Nome do Assistente</Label>
                     <Input
                       id="name"
-                      value={localName}
-                      onChange={(e) => setLocalName(e.target.value)}
+                      value={formData.name}
+                      onChange={(e) => updateField('name', e.target.value)}
                       placeholder="Digite o nome do assistente"
                       className="konver-focus"
                     />
@@ -240,11 +255,11 @@ export default function SettingsContent({
                     <div className="flex items-center space-x-2 h-10">
                       <Switch
                         id="status"
-                        checked={assistant.active}
-                        onCheckedChange={(checked) => updateAssistant({ active: checked })}
+                        checked={formData.active}
+                        onCheckedChange={(checked) => updateField('active', checked)}
                       />
-                      <span className={`text-sm font-medium ${assistant.active ? 'text-success' : 'text-muted-foreground'}`}>
-                        {assistant.active ? 'Ativo' : 'Inativo'}
+                      <span className={`text-sm font-medium ${formData.active ? 'text-success' : 'text-muted-foreground'}`}>
+                        {formData.active ? 'Ativo' : 'Inativo'}
                       </span>
                     </div>
                   </div>
@@ -254,8 +269,8 @@ export default function SettingsContent({
                   <Label htmlFor="description" className="text-sm font-medium">Descrição</Label>
                   <Textarea
                     id="description"
-                    value={localDescription}
-                    onChange={(e) => setLocalDescription(e.target.value)}
+                    value={formData.description}
+                    onChange={(e) => updateField('description', e.target.value)}
                     placeholder="Descreva a funcionalidade e propósito do assistente"
                     rows={3}
                     className="konver-focus resize-none"
@@ -281,7 +296,7 @@ export default function SettingsContent({
                   <div className="flex justify-between items-center">
                     <Label htmlFor="temperature" className="text-sm font-medium">Temperatura</Label>
                     <Badge variant="outline" className="bg-accent/5 text-accent border-accent/20">
-                      {localTemperature[0].toFixed(1)}
+                      {formData.temperature.toFixed(1)}
                     </Badge>
                   </div>
                   <Slider
@@ -289,8 +304,8 @@ export default function SettingsContent({
                     min={0}
                     max={2}
                     step={0.1}
-                    value={localTemperature}
-                    onValueChange={setLocalTemperature}
+                    value={[formData.temperature]}
+                    onValueChange={([value]) => updateField('temperature', value)}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
@@ -303,7 +318,7 @@ export default function SettingsContent({
                   <div className="flex justify-between items-center">
                     <Label htmlFor="wait-time" className="text-sm font-medium">Tempo de Espera (segundos)</Label>
                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                      {localWaitTime[0]}s
+                      {formData.wait_time}s
                     </Badge>
                   </div>
                   <Slider
@@ -311,8 +326,8 @@ export default function SettingsContent({
                     min={20}
                     max={180}
                     step={5}
-                    value={localWaitTime}
-                    onValueChange={setLocalWaitTime}
+                    value={[formData.wait_time]}
+                    onValueChange={([value]) => updateField('wait_time', value)}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
@@ -383,7 +398,7 @@ export default function SettingsContent({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => onCreatePromptVersion?.(type as any)}
+                          onClick={() => onCreatePromptVersion?.(type as 'principal' | 'triagem' | 'think')}
                           className="text-xs h-7"
                         >
                           {hasActive ? 'Editar' : 'Configurar'}

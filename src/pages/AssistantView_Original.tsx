@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Bot, Home, Menu } from "lucide-react";
+import { ArrowLeft, Bot, Home, Menu, MessageSquare, Database, Settings, Trash2, RefreshCw, Upload } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBot, useUpdateBot, useDeleteBot, useCreateBot } from "@/hooks/useBots";
 import { useToast } from "@/hooks/use-toast";
 import KonverLayout from "@/components/KonverLayout";
 import AssistantSidebar from "@/components/AssistantSidebar";
+import TabContainer from "@/components/TabContainer";
 import TestChatContent from "@/components/TestChatContent";
 import SettingsContent from "@/components/SettingsContent";
 import KnowledgeBaseContent from "@/components/KnowledgeBaseContent";
@@ -14,6 +15,7 @@ import ConversationsContent from "@/components/ConversationsContent";
 import BotFeedbackManagement from "@/components/BotFeedbackManagement";
 import IntegrationsContent from "@/components/IntegrationsContent";
 import FlowsContent from "@/components/FlowsContent";
+import WhatsAppConnection from "@/components/WhatsAppConnection";
 import CompanyContent from "@/components/CompanyContent";
 import { AssistantData } from "@/types/assistant";
 import { PromptModificationRequest } from "@/components/PromptWizard";
@@ -34,100 +36,143 @@ export default function AssistantView() {
   const deleteBotMutation = useDeleteBot();
   const createBotMutation = useCreateBot();
   
-  // Simplified settings state - only keep essential ones for navigation
+  // Settings states
+  const [assistantName, setAssistantName] = useState(isNewBot ? 'Novo Assistente' : '');
+  const [assistantDescription, setAssistantDescription] = useState(isNewBot ? 'Descrição do assistente' : '');
   const [systemPrompt, setSystemPrompt] = useState(isNewBot ? 'Você é um assistente útil e inteligente.' : '');
+  const [temperature, setTemperature] = useState([0.7]);
+  const [assistantStatus, setAssistantStatus] = useState('active');
+  
+  // Persona states
+  const [personaObjective, setPersonaObjective] = useState('');
+  const [personaPersonality, setPersonaPersonality] = useState('');
+  const [personaStyle, setPersonaStyle] = useState('');
+  const [personaTargetAudience, setPersonaTargetAudience] = useState('');
+  
+  // Company states
+  const [companyName, setCompanyName] = useState('');
+  const [companyAddress, setCompanyAddress] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [companyInstagram, setCompanyInstagram] = useState('');
+  const [companyBusinessHours, setCompanyBusinessHours] = useState('');
   
   const { toast } = useToast();
   const { user, signOut } = useAuth();
+
+  // Transform bot data to AssistantData format - use current local state values
+  const assistant: AssistantData | null = isNewBot ? {
+    id: 'new',
+    name: assistantName,
+    description: assistantDescription,
+    status: assistantStatus,
+    conversations: 0,
+    performance: 0,
+    prompt: systemPrompt,
+    temperature: temperature[0],
+    max_tokens: null,
+    knowledge_base: null,
+    persona_name: assistantName,
+    persona_objective: personaObjective,
+    persona_personality: personaPersonality,
+    persona_style: personaStyle,
+    persona_target_audience: personaTargetAudience,
+    company_name: companyName,
+    company_address: companyAddress,
+    company_website: companyWebsite,
+    company_instagram: companyInstagram,
+    company_business_hours: companyBusinessHours,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  } : bot ? {
+    id: bot.id,
+    name: assistantName, // Use current local state
+    description: assistantDescription, // Use current local state
+    status: assistantStatus, // Use current local state
+    conversations: bot.conversations || 0,
+    performance: bot.performance || 0,
+    prompt: systemPrompt, // Use current local state
+    temperature: temperature[0], // Use current local state
+    max_tokens: bot.max_tokens,
+    knowledge_base: null,
+    persona_name: assistantName, // Use current local state
+    persona_objective: personaObjective, // Use current local state
+    persona_personality: personaPersonality, // Use current local state
+    persona_style: personaStyle, // Use current local state
+    persona_target_audience: personaTargetAudience, // Use current local state
+    company_name: companyName, // Use current local state
+    company_address: companyAddress, // Use current local state
+    company_website: companyWebsite, // Use current local state
+    company_instagram: companyInstagram, // Use current local state
+    company_business_hours: companyBusinessHours, // Use current local state
+    created_at: bot.created_at,
+    updated_at: bot.updated_at
+  } : null;
 
   // Monitor ID changes to update isNewBot state
   useEffect(() => {
     setIsNewBot(id === 'new');
   }, [id]);
 
-  // Initialize system prompt from bot data when available
+  // Initialize states from bot data
   useEffect(() => {
     if (bot && !isNewBot) {
+      setAssistantName(bot.name);
+      setAssistantDescription(bot.description || '');
       setSystemPrompt(bot.prompt || 'Você é um assistente útil e inteligente.');
+      setTemperature([bot.temperature || 0.7]);
+      setAssistantStatus(bot.status || 'active');
+      setPersonaObjective(bot.persona_objective || '');
+      setPersonaPersonality(bot.persona_personality || '');
+      setPersonaStyle(bot.persona_style || '');
+      setPersonaTargetAudience(bot.persona_target_audience || '');
+      setCompanyName(bot.company_name || '');
+      setCompanyAddress(bot.company_address || '');
+      setCompanyWebsite(bot.company_website || '');
+      setCompanyInstagram(bot.company_instagram || '');
+      setCompanyBusinessHours(bot.company_business_hours || '');
     }
   }, [bot, isNewBot]);
 
-  // Transform bot data to AssistantData format - use server data directly
-  const assistant: AssistantData | null = isNewBot ? {
-    id: 'new',
-    name: 'Novo Assistente',
-    description: 'Descrição do assistente',
-    status: 'active',
-    conversations: 0,
-    performance: 0,
-    prompt: systemPrompt,
-    temperature: 0.7,
-    max_tokens: null,
-    knowledge_base: null,
-    persona_name: 'Novo Assistente',
-    persona_objective: '',
-    persona_personality: '',
-    persona_style: '',
-    persona_target_audience: '',
-    company_name: '',
-    company_address: '',
-    company_website: '',
-    company_instagram: '',
-    company_business_hours: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  } : bot ? {
-    id: bot.id,
-    name: bot.name,
-    description: bot.description || '',
-    status: bot.status || 'active',
-    conversations: bot.conversations || 0,
-    performance: bot.performance || 0,
-    prompt: systemPrompt,
-    temperature: bot.temperature || 0.7,
-    max_tokens: bot.max_tokens,
-    knowledge_base: null,
-    persona_name: bot.name,
-    persona_objective: bot.persona_objective || '',
-    persona_personality: bot.persona_personality || '',
-    persona_style: bot.persona_style || '',
-    persona_target_audience: bot.persona_target_audience || '',
-    company_name: bot.company_name || '',
-    company_address: bot.company_address || '',
-    company_website: bot.company_website || '',
-    company_instagram: bot.company_instagram || '',
-    company_business_hours: bot.company_business_hours || '',
-    created_at: bot.created_at,
-    updated_at: bot.updated_at
-  } : null;
+  const saveSettings = async (localValues?: { name: string; description: string; temperature: number }) => {
+    console.log('🟣 saveSettings called');
+    console.log('🟣 Local values received:', localValues);
+    console.log('🟣 Current state values:', {
+      assistantName,
+      assistantDescription,
+      systemPrompt,
+      temperature: temperature[0],
+      assistantStatus,
+      isNewBot,
+      id,
+      assistant: assistant ? { id: assistant.id, name: assistant.name, description: assistant.description } : null
+    });
 
-  const saveSettings = async (localValues?: { name: string; description: string; temperature: number; wait_time?: number }) => {
-    console.log('🟣 saveSettings called with:', localValues);
+    // Use local values if provided, otherwise use current state
+    const nameToSave = localValues?.name ?? assistantName;
+    const descriptionToSave = localValues?.description ?? assistantDescription;
+    const temperatureToSave = localValues?.temperature ?? temperature[0];
     
-    if (!localValues) {
-      console.log('🔴 No local values provided for save');
-      return;
-    }
+    console.log('🟣 Values to save:', { nameToSave, descriptionToSave, temperatureToSave });
     
     if (isNewBot) {
       // Create new bot
       try {
         const newBotData = {
-          name: localValues.name,
-          description: localValues.description,
+          name: nameToSave,
+          description: descriptionToSave,
           prompt: systemPrompt,
-          temperature: localValues.temperature,
-          status: 'active',
-          persona_name: localValues.name,
-          persona_objective: '',
-          persona_personality: '',
-          persona_style: '',
-          persona_target_audience: '',
-          company_name: '',
-          company_address: '',
-          company_website: '',
-          company_instagram: '',
-          company_business_hours: '',
+          temperature: temperatureToSave,
+          status: assistantStatus,
+          persona_name: nameToSave,
+          persona_objective: personaObjective,
+          persona_personality: personaPersonality,
+          persona_style: personaStyle,
+          persona_target_audience: personaTargetAudience,
+          company_name: companyName,
+          company_address: companyAddress,
+          company_website: companyWebsite,
+          company_instagram: companyInstagram,
+          company_business_hours: companyBusinessHours,
           conversations: 0,
           performance: 0
         };
@@ -162,12 +207,21 @@ export default function AssistantView() {
     
     try {
       const updateData = {
-        name: localValues.name,
-        description: localValues.description,
+        name: nameToSave,
+        description: descriptionToSave,
         prompt: systemPrompt,
-        temperature: localValues.temperature,
-        ...(localValues.wait_time !== undefined && { wait_time: localValues.wait_time }),
-        persona_name: localValues.name,
+        temperature: temperatureToSave,
+        status: assistantStatus,
+        persona_name: nameToSave,
+        persona_objective: personaObjective,
+        persona_personality: personaPersonality,
+        persona_style: personaStyle,
+        persona_target_audience: personaTargetAudience,
+        company_name: companyName,
+        company_address: companyAddress,
+        company_website: companyWebsite,
+        company_instagram: companyInstagram,
+        company_business_hours: companyBusinessHours,
       };
       
       console.log('🟣 Updating bot with id:', id);
@@ -180,9 +234,18 @@ export default function AssistantView() {
       
       console.log('🟣 Update mutation result:', result);
 
+      // Update local states to match saved values
+      if (localValues) {
+        console.log('🟣 Updating local states to match saved values...');
+        setAssistantName(localValues.name);
+        setAssistantDescription(localValues.description);
+        setTemperature([localValues.temperature]);
+      }
+
       // Refetch the bot data to ensure UI is synchronized
       console.log('🟣 Refetching bot data...');
-      await refetch();
+      const refetchResult = await refetch();
+      console.log('🟣 Refetch result:', refetchResult);
 
       toast({
         title: "Configurações salvas",
@@ -227,9 +290,13 @@ export default function AssistantView() {
     website: string;
     instagram: string;
     businessHours: string;
-    professionals?: string;
-    procedures?: string;
   }) => {
+    setCompanyName(companyInfo.name);
+    setCompanyAddress(companyInfo.address);
+    setCompanyWebsite(companyInfo.website);
+    setCompanyInstagram(companyInfo.instagram);
+    setCompanyBusinessHours(companyInfo.businessHours);
+
     if (!id || id === 'new') return;
 
     try {
@@ -241,13 +308,8 @@ export default function AssistantView() {
           company_website: companyInfo.website,
           company_instagram: companyInfo.instagram,
           company_business_hours: companyInfo.businessHours,
-          ...(companyInfo.professionals !== undefined && { company_professionals: companyInfo.professionals }),
-          ...(companyInfo.procedures !== undefined && { company_procedures: companyInfo.procedures }),
         }
       });
-      
-      // Refetch to update the assistant data
-      await refetch();
     } catch (error) {
       console.error('Error saving company info:', error);
       throw error;
@@ -349,11 +411,10 @@ export default function AssistantView() {
           <SettingsContent
             assistant={{
               id: assistant.id,
-              name: assistant.name,
-              description: assistant.description,
-              temperature: assistant.temperature,
-              active: assistant.status === 'active',
-              wait_time: bot?.wait_time,
+              name: assistantName,
+              description: assistantDescription,
+              temperature: temperature[0],
+              active: assistantStatus === 'active',
               prompts: {
                 principal: [],
                 triagem: [],
@@ -362,8 +423,31 @@ export default function AssistantView() {
             }}
             updateAssistant={(updates) => {
               console.log('🟢 AssistantView.updateAssistant called with:', updates);
-              // This function is now mainly for immediate UI feedback
-              // The actual saving is handled by the SettingsContent component
+              console.log('🟢 Current states before update:', { 
+                assistantName, 
+                assistantDescription, 
+                temperature: temperature[0], 
+                assistantStatus 
+              });
+              
+              if (updates.name !== undefined) {
+                console.log('🟢 Updating assistantName:', updates.name);
+                setAssistantName(updates.name);
+              }
+              if (updates.description !== undefined) {
+                console.log('🟢 Updating assistantDescription:', updates.description);
+                setAssistantDescription(updates.description);
+              }
+              if (updates.temperature !== undefined) {
+                console.log('🟢 Updating temperature:', updates.temperature);
+                setTemperature([updates.temperature]);
+              }
+              if (updates.active !== undefined) {
+                console.log('🟢 Updating assistantStatus:', updates.active ? 'active' : 'inactive');
+                setAssistantStatus(updates.active ? 'active' : 'inactive');
+              }
+              
+              console.log('🟢 AssistantView.updateAssistant completed');
             }}
             onSave={saveSettings}
           />
@@ -373,15 +457,13 @@ export default function AssistantView() {
         return (
           <CompanyContent
             assistantId={id || ''}
-            companyInfo={bot ? {
-              company_name: bot.company_name,
-              company_address: bot.company_address,
-              company_website: bot.company_website,
-              company_instagram: bot.company_instagram,
-              company_business_hours: bot.company_business_hours,
-              company_professionals: bot.company_professionals,
-              company_procedures: bot.company_procedures,
-            } : undefined}
+            companyInfo={{
+              company_name: companyName,
+              company_address: companyAddress,
+              company_website: companyWebsite,
+              company_instagram: companyInstagram,
+              company_business_hours: companyBusinessHours,
+            }}
             onSave={handleSaveCompany}
           />
         );
@@ -413,7 +495,7 @@ export default function AssistantView() {
       assistant={assistant}
       breadcrumbs={[
         { label: 'Dashboard', href: '/' },
-        { label: isNewBot ? 'Criar Assistente' : assistant?.name || 'Assistente' }
+        { label: isNewBot ? 'Criar Assistente' : assistant.name }
       ]}
       actions={
         <div className="flex items-center gap-2">
@@ -468,10 +550,10 @@ export default function AssistantView() {
               setSidebarOpen(false); // Close sidebar on mobile when tab changes
             }}
             assistant={{
-              name: assistant?.name || 'Novo Assistente',
-              conversations: assistant?.conversations || 0,
-              performance: assistant?.performance || 0,
-              status: assistant?.status || 'active'
+              name: assistant.name,
+              conversations: assistant.conversations,
+              performance: assistant.performance,
+              status: assistant.status
             }}
             isNewBot={isNewBot}
           />
@@ -486,6 +568,8 @@ export default function AssistantView() {
           </div>
         </div>
       </div>
+
+
     </KonverLayout>
   );
-}
+} 
