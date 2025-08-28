@@ -1,19 +1,32 @@
 import React, { useState } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AssistantStepHeader from "@/components/AssistantStepHeader";
-import KnowledgeBaseStats from "./KnowledgeBaseStats";
 import KnowledgeBaseFilters, { SortField, SortDirection } from "./KnowledgeBaseFilters";
-import KnowledgeBaseUpload from "./KnowledgeBaseUpload";
 import KnowledgeBaseFileList from "./KnowledgeBaseFileList";
 import KnowledgeBaseEmpty from "./KnowledgeBaseEmpty";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   Upload,
   Database,
-  Trash2
+  Trash2,
+  Filter,
+  X
 } from "lucide-react";
 import { useKnowledgeBase } from "@/hooks/useKnowledgeBase";
 import { KnowledgeBaseFile } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 interface KnowledgeBaseContentProps {
   assistantId: string;
@@ -28,9 +41,9 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [searchFocused, setSearchFocused] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [previewFile, setPreviewFile] = useState<KnowledgeBaseFile | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showHeaderDeleteDialog, setShowHeaderDeleteDialog] = useState(false);
 
   const { toast } = useToast();
 
@@ -108,6 +121,54 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
     });
   };
 
+  // Handle bulk file download
+  const handleBulkDownload = async () => {
+    if (selectedFiles.size === 0) return;
+    
+    const selectedFileIds = Array.from(selectedFiles);
+    const selectedFilesToDownload = knowledgeFiles.filter(f => 
+      selectedFileIds.includes(f.id)
+    );
+    
+    if (selectedFilesToDownload.length === 0) {
+      toast({
+        title: "Nenhum arquivo selecionado",
+        description: "Não há arquivos válidos para download na seleção.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let successful = 0;
+    let failed = 0;
+
+    // Download each file sequentially to avoid overwhelming the browser
+    for (const file of selectedFilesToDownload) {
+      try {
+        const success = await downloadFile(file.id);
+        if (success) {
+          successful++;
+        } else {
+          failed++;
+        }
+        // Small delay between downloads to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        failed++;
+        console.error(`Error downloading file ${file.file_name}:`, error);
+      }
+    }
+
+    toast({
+      title: successful > 0 ? "Download iniciado" : "Erro no download",
+      description: `${successful} arquivo(s) baixado(s)${failed > 0 ? `, ${failed} falharam` : ''}.`,
+      variant: failed > 0 && successful === 0 ? "destructive" : "default",
+    });
+
+    // Clear selection after download
+    setSelectedFiles(new Set());
+  };
+
   // Filtering and Sorting
   const getAvailableTypes = (): string[] => {
     const types = new Set(knowledgeFiles.map(file => getFileExtension(file.file_name)));
@@ -168,6 +229,20 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
     await retryFile(fileId);
   };
 
+  // Get file counts for quick status display
+  const getStatusCounts = () => {
+    const total = knowledgeFiles.length;
+    const ready = knowledgeFiles.filter(f => f.status === 'ready').length;
+    const processing = knowledgeFiles.filter(f => f.status === 'processing').length;
+    const error = knowledgeFiles.filter(f => f.status === 'error').length;
+    return { total, ready, processing, error };
+  };
+
+  const statusCounts = getStatusCounts();
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm || statusFilter !== 'all' || typeFilter !== 'all';
+
   // Header configuration
   const headerActions = [
     {
@@ -177,11 +252,19 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
       disabled: uploading,
       variant: "default" as const
     },
+    ...(knowledgeFiles.length > 0 ? [
+      {
+        label: showFilters ? "Ocultar Filtros" : "Filtros",
+        icon: <Filter className="w-4 h-4" />,
+        onClick: () => setShowFilters(!showFilters),
+        variant: "outline" as const
+      }
+    ] : []),
     ...(selectedFiles.size > 0 ? [
       {
-        label: `Excluir Selecionados (${selectedFiles.size})`,
+        label: `Excluir (${selectedFiles.size})`,
         icon: <Trash2 className="w-4 h-4" />,
-        onClick: handleBulkDelete,
+        onClick: () => setShowHeaderDeleteDialog(true),
         variant: "destructive" as const
       }
     ] : [])
@@ -219,6 +302,95 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
 
   const emptyState = getEmptyState();
 
+  // Upload progress component
+  const renderUploadProgress = () => {
+    if (!uploading && uploadProgress.length === 0) return null;
+
+    return (
+      <div className="mb-4 p-4 konver-glass-card rounded-xl konver-animate-slide-down">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 konver-gradient-accent rounded-lg flex items-center justify-center">
+              <Upload className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">Enviando arquivos...</p>
+              <p className="text-xs text-muted-foreground">
+                {uploadProgress.length > 1 ? `${uploadProgress.length} arquivos` : 'Upload único'}
+              </p>
+            </div>
+          </div>
+          
+          {uploadProgress.map((progress, index) => (
+            <div key={index} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium truncate flex-1 mr-4">{progress.fileName}</p>
+                <p className="text-sm font-medium">{progress.progress}%</p>
+              </div>
+              <Progress value={progress.progress} className="h-2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Status summary bar
+  const renderStatusSummary = () => {
+    if (knowledgeFiles.length === 0) return null;
+
+    return (
+      <div className="flex items-center justify-between p-4 konver-glass-card rounded-xl mb-4">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-xs">
+              Total: {statusCounts.total}
+            </Badge>
+            {statusCounts.ready > 0 && (
+              <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                Prontos: {statusCounts.ready}
+              </Badge>
+            )}
+            {statusCounts.processing > 0 && (
+              <Badge variant="outline" className="text-xs bg-warning/10 text-warning border-warning/20">
+                Processando: {statusCounts.processing}
+              </Badge>
+            )}
+            {statusCounts.error > 0 && (
+              <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">
+                Erros: {statusCounts.error}
+              </Badge>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {filteredAndSortedFiles.length !== knowledgeFiles.length && (
+            <span className="text-sm text-muted-foreground">
+              {filteredAndSortedFiles.length} de {knowledgeFiles.length}
+            </span>
+          )}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setTypeFilter('all');
+              }}
+              className="h-8 text-xs"
+            >
+              <X className="w-3 h-3 mr-1" />
+              Limpar
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Early return for empty state
   if (knowledgeFiles.length === 0 && !loading && !uploading) {
     return (
       <div className="flex flex-col h-full">
@@ -227,14 +399,7 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
           description="Envie e organize fontes de conhecimento para seu assistente"
           icon={<Database className="w-5 h-5 text-white" />}
           compact={true}
-          actions={[
-            {
-              label: "Enviar Arquivos",
-              icon: <Upload className="w-4 h-4" />,
-              onClick: () => document.getElementById('file-input')?.click(),
-              variant: "default" as const
-            }
-          ]}
+          actions={headerActions}
           className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
         />
         
@@ -284,7 +449,7 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
         icon={<Database className="w-5 h-5 text-white" />}
         compact={true}
         actions={headerActions}
-        loading={uploading}
+        loading={false}
         className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
       />
 
@@ -303,43 +468,38 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
               </div>
             </div>
           )}
+          
           <div className="flex-1 min-h-0 overflow-hidden">
             <ScrollArea className="h-full konver-scrollbar">
-              <div className="p-6 space-y-6">
-                {/* Stats */}
-                <KnowledgeBaseStats 
-                  stats={stats}
-                  loading={loading}
-                />
+              <div className="p-6 space-y-4">
+                {/* Upload Progress */}
+                {renderUploadProgress()}
 
-                {/* Upload Progress Only */}
-                <KnowledgeBaseUpload
-                  onFileUpload={handleFileUpload}
-                  uploading={uploading}
-                  uploadProgress={uploadProgress}
-                  dragActive={dragActive}
-                  setDragActive={setDragActive}
-                  showUploadArea={false}
-                />
+                {/* Status Summary */}
+                {renderStatusSummary()}
 
-                {/* Filters */}
-                <KnowledgeBaseFilters
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  statusFilter={statusFilter}
-                  onStatusFilterChange={setStatusFilter}
-                  typeFilter={typeFilter}
-                  onTypeFilterChange={setTypeFilter}
-                  sortField={sortField}
-                  sortDirection={sortDirection}
-                  onSortChange={toggleSort}
-                  stats={stats}
-                  filteredCount={filteredAndSortedFiles.length}
-                  totalCount={knowledgeFiles.length}
-                  availableTypes={getAvailableTypes()}
-                  searchFocused={searchFocused}
-                  onSearchFocus={setSearchFocused}
-                />
+                {/* Filters - Collapsible */}
+                {showFilters && (
+                  <div className="konver-animate-slide-down">
+                    <KnowledgeBaseFilters
+                      searchTerm={searchTerm}
+                      onSearchChange={setSearchTerm}
+                      statusFilter={statusFilter}
+                      onStatusFilterChange={setStatusFilter}
+                      typeFilter={typeFilter}
+                      onTypeFilterChange={setTypeFilter}
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSortChange={toggleSort}
+                      stats={stats}
+                      filteredCount={filteredAndSortedFiles.length}
+                      totalCount={knowledgeFiles.length}
+                      availableTypes={getAvailableTypes()}
+                      searchFocused={false}
+                      onSearchFocus={() => {}}
+                    />
+                  </div>
+                )}
 
                 {/* File List */}
                 <KnowledgeBaseFileList
@@ -347,29 +507,53 @@ export default function KnowledgeBaseContent({ assistantId, onUpload }: Knowledg
                   loading={loading}
                   selectedFiles={selectedFiles}
                   onFileSelect={toggleFileSelection}
-                  onPreviewFile={setPreviewFile}
+                  onPreviewFile={() => {}}
                   onDownloadFile={downloadFile}
                   onDeleteFile={handleDelete}
                   onRetryFile={handleRetryFile}
                   onBulkDelete={handleBulkDelete}
+                  onBulkDownload={handleBulkDownload}
                   onClearSelection={clearSelection}
                   emptyState={emptyState}
-                />
-
-                {/* Hidden file input */}
-                <input
-                  id="file-input"
-                  type="file"
-                  multiple
-                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                  accept=".txt,.pdf,.json,.md,.xlsx,.csv,.docx,.doc"
-                  className="hidden"
                 />
               </div>
             </ScrollArea>
           </div>
+
+          {/* Hidden file input */}
+          <input
+            id="file-input"
+            type="file"
+            multiple
+            onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+            accept=".txt,.pdf,.json,.md,.xlsx,.csv,.docx,.doc"
+            className="hidden"
+          />
         </div>
       </div>
+
+      <AlertDialog open={showHeaderDeleteDialog} onOpenChange={setShowHeaderDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão em lote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir {selectedFiles.size} arquivo{selectedFiles.size > 1 ? 's' : ''} selecionado{selectedFiles.size > 1 ? 's' : ''}? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                handleBulkDelete();
+                setShowHeaderDeleteDialog(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir {selectedFiles.size} arquivo{selectedFiles.size > 1 ? 's' : ''}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

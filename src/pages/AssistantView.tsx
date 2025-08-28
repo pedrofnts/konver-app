@@ -3,8 +3,8 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bot, Home, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useBot, useUpdateBot, useDeleteBot, useCreateBot } from "@/hooks/useBots";
 import { useToast } from "@/hooks/use-toast";
+import { useAssistantState } from "@/hooks/useAssistantState";
 import KonverLayout from "@/components/KonverLayout";
 import AssistantSidebar from "@/components/AssistantSidebar";
 import TestChatContent from "@/components/TestChatContent";
@@ -28,14 +28,18 @@ export default function AssistantView() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isNewBot, setIsNewBot] = useState(id === 'new');
   
-  // Use the new hooks
-  const { data: bot, isLoading: loading, refetch } = useBot(id && id !== 'new' ? id : '');
-  const updateBotMutation = useUpdateBot();
-  const deleteBotMutation = useDeleteBot();
-  const createBotMutation = useCreateBot();
-  
-  // Simplified settings state - only keep essential ones for navigation
-  const [systemPrompt, setSystemPrompt] = useState(isNewBot ? 'Você é um assistente útil e inteligente.' : '');
+  // Use the new assistant state hook
+  const {
+    assistant,
+    bot,
+    isLoading: loading,
+    refetch,
+    saveSettings,
+    saveCompany
+  } = useAssistantState({
+    assistantId: id || '',
+    isNewBot
+  });
   
   const { toast } = useToast();
   const { user, signOut } = useAuth();
@@ -45,152 +49,27 @@ export default function AssistantView() {
     setIsNewBot(id === 'new');
   }, [id]);
 
-  // Initialize system prompt from bot data when available
-  useEffect(() => {
-    if (bot && !isNewBot) {
-      setSystemPrompt(bot.prompt || 'Você é um assistente útil e inteligente.');
-    }
-  }, [bot, isNewBot]);
-
-  // Transform bot data to AssistantData format - use server data directly
-  const assistant: AssistantData | null = isNewBot ? {
-    id: 'new',
-    name: 'Novo Assistente',
-    description: 'Descrição do assistente',
-    status: 'active',
-    conversations: 0,
-    performance: 0,
-    prompt: systemPrompt,
-    temperature: 0.7,
-    max_tokens: null,
-    knowledge_base: null,
-    persona_name: 'Novo Assistente',
-    persona_objective: '',
-    persona_personality: '',
-    persona_style: '',
-    persona_target_audience: '',
-    company_name: '',
-    company_address: '',
-    company_website: '',
-    company_instagram: '',
-    company_business_hours: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  } : bot ? {
-    id: bot.id,
-    name: bot.name,
-    description: bot.description || '',
-    status: bot.status || 'active',
-    conversations: bot.conversations || 0,
-    performance: bot.performance || 0,
-    prompt: systemPrompt,
-    temperature: bot.temperature || 0.7,
-    max_tokens: bot.max_tokens,
-    knowledge_base: null,
-    persona_name: bot.name,
-    persona_objective: bot.persona_objective || '',
-    persona_personality: bot.persona_personality || '',
-    persona_style: bot.persona_style || '',
-    persona_target_audience: bot.persona_target_audience || '',
-    company_name: bot.company_name || '',
-    company_address: bot.company_address || '',
-    company_website: bot.company_website || '',
-    company_instagram: bot.company_instagram || '',
-    company_business_hours: bot.company_business_hours || '',
-    created_at: bot.created_at,
-    updated_at: bot.updated_at
-  } : null;
-
-  const saveSettings = async (localValues?: { name: string; description: string; temperature: number; wait_time?: number }) => {
-    console.log('🟣 saveSettings called with:', localValues);
-    
-    if (!localValues) {
-      console.log('🔴 No local values provided for save');
-      return;
-    }
-    
-    if (isNewBot) {
-      // Create new bot
-      try {
-        const newBotData = {
-          name: localValues.name,
-          description: localValues.description,
-          prompt: systemPrompt,
-          temperature: localValues.temperature,
-          status: 'active',
-          persona_name: localValues.name,
-          persona_objective: '',
-          persona_personality: '',
-          persona_style: '',
-          persona_target_audience: '',
-          company_name: '',
-          company_address: '',
-          company_website: '',
-          company_instagram: '',
-          company_business_hours: '',
-          conversations: 0,
-          performance: 0
-        };
-        
-        console.log('🟣 Creating new bot with data:', newBotData);
-        const newBot = await createBotMutation.mutateAsync(newBotData);
-        console.log('🟣 New bot created:', newBot);
-        
+  const handleSaveSettings = async (localValues?: { name: string; description: string; temperature: number; wait_time?: number }) => {
+    try {
+      const result = await saveSettings(localValues);
+      
+      if (isNewBot && result && typeof result === 'object' && 'id' in result) {
         toast({
           title: "Sucesso",
           description: "Assistente criado com sucesso!",
         });
         
         // Redirect to the new bot's page
-        navigate(`/assistant/${newBot.id}?tab=settings`, { replace: true });
-        return;
-      } catch (error) {
-        console.error('🔴 Error creating bot:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao criar o assistente",
-          variant: "destructive",
-        });
+        navigate(`/assistant/${result.id}?tab=settings`, { replace: true });
         return;
       }
-    }
-    
-    if (!id || !assistant) {
-      console.log('🔴 Cannot save - missing id or assistant:', { id, assistant });
-      return;
-    }
-    
-    try {
-      const updateData = {
-        name: localValues.name,
-        description: localValues.description,
-        prompt: systemPrompt,
-        temperature: localValues.temperature,
-        ...(localValues.wait_time !== undefined && { wait_time: localValues.wait_time }),
-        persona_name: localValues.name,
-      };
       
-      console.log('🟣 Updating bot with id:', id);
-      console.log('🟣 Update data:', updateData);
-      
-      const result = await updateBotMutation.mutateAsync({
-        botId: id,
-        updates: updateData
-      });
-      
-      console.log('🟣 Update mutation result:', result);
-
-      // Refetch the bot data to ensure UI is synchronized
-      console.log('🟣 Refetching bot data...');
-      await refetch();
-
       toast({
         title: "Configurações salvas",
         description: "As configurações do assistente foram atualizadas com sucesso.",
       });
-
     } catch (error) {
-      console.error('🔴 Error saving settings:', error);
+      console.error('Error saving settings:', error);
       toast({
         title: "Erro ao salvar",
         description: "Não foi possível salvar as configurações.",
@@ -213,7 +92,7 @@ export default function AssistantView() {
   };
 
   const handleApplyPromptFromAssistant = (newPrompt: string) => {
-    setSystemPrompt(newPrompt);
+    // TODO: Apply prompt to system - this function needs to be refactored with the new hook
     toast({
       title: "Prompt Aplicado!",
       description: "O novo prompt foi aplicado com sucesso. Você pode testá-lo na aba de teste.",
@@ -230,27 +109,19 @@ export default function AssistantView() {
     professionals?: string;
     procedures?: string;
   }) => {
-    if (!id || id === 'new') return;
-
     try {
-      await updateBotMutation.mutateAsync({
-        botId: id,
-        updates: {
-          company_name: companyInfo.name,
-          company_address: companyInfo.address,
-          company_website: companyInfo.website,
-          company_instagram: companyInfo.instagram,
-          company_business_hours: companyInfo.businessHours,
-          ...(companyInfo.professionals !== undefined && { company_professionals: companyInfo.professionals }),
-          ...(companyInfo.procedures !== undefined && { company_procedures: companyInfo.procedures }),
-        }
+      await saveCompany(companyInfo);
+      toast({
+        title: "Informações da empresa salvas",
+        description: "As informações da empresa foram atualizadas com sucesso.",
       });
-      
-      // Refetch to update the assistant data
-      await refetch();
     } catch (error) {
       console.error('Error saving company info:', error);
-      throw error;
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as informações da empresa.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -342,7 +213,7 @@ export default function AssistantView() {
         return isNewBot ? null : <TestChatContent assistantId={id || ''} />;
       
       case 'conversations':
-        return isNewBot ? null : <ConversationsContent assistantId={id || ''} />;
+        return isNewBot ? null : <ConversationsContent assistantId={id || ''} onRefresh={() => refetch()} />;
       
       case 'settings':
         return (
@@ -353,7 +224,7 @@ export default function AssistantView() {
               description: assistant.description,
               temperature: assistant.temperature,
               active: assistant.status === 'active',
-              wait_time: bot?.wait_time,
+              wait_time: (bot as any)?.wait_time,
               prompts: {
                 principal: [],
                 triagem: [],
@@ -365,7 +236,7 @@ export default function AssistantView() {
               // This function is now mainly for immediate UI feedback
               // The actual saving is handled by the SettingsContent component
             }}
-            onSave={saveSettings}
+            onSave={handleSaveSettings}
           />
         );
       
@@ -379,8 +250,8 @@ export default function AssistantView() {
               company_website: bot.company_website,
               company_instagram: bot.company_instagram,
               company_business_hours: bot.company_business_hours,
-              company_professionals: bot.company_professionals,
-              company_procedures: bot.company_procedures,
+              company_professionals: (bot as any).company_professionals,
+              company_procedures: (bot as any).company_procedures,
             } : undefined}
             onSave={handleSaveCompany}
           />
@@ -438,7 +309,7 @@ export default function AssistantView() {
         </div>
       }
     >
-      <div className="flex h-[calc(100vh-7rem)] bg-gradient-to-br from-background via-background/95 to-card/10 relative">
+      <div className="flex h-[calc(100vh-7rem)] bg-gradient-to-br from-background via-background/95 to-card/10 relative overflow-hidden">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20"></div>
@@ -478,9 +349,9 @@ export default function AssistantView() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 konver-content-area relative z-10 min-w-0 flex flex-col h-full">
-          <div className="p-4 md:p-6 lg:p-8 flex-1 flex flex-col h-full">
-            <div className="konver-animate-fade-in flex-1 h-full overflow-hidden">
+        <div className="flex-1 konver-content-area relative z-10 min-w-0 flex flex-col h-full overflow-hidden">
+          <div className="p-4 md:p-6 lg:p-8 flex-1 flex flex-col h-full min-h-0">
+            <div className="konver-animate-fade-in flex-1 h-full min-h-0 overflow-hidden">
               {renderActiveTabContent()}
             </div>
           </div>

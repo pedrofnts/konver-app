@@ -80,11 +80,26 @@ export default function KnowledgeBaseFilters({
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="konver-glass-card rounded-xl p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium text-sm">Filtros e Busca</h3>
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-8 text-xs"
+          >
+            <X className="w-3 h-3 mr-1" />
+            Limpar Tudo
+          </Button>
+        )}
+      </div>
+
       {/* Search Bar */}
       <div className="relative">
         <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${
-          searchFocused ? 'text-primary konver-animate-glow-pulse' : 'text-muted-foreground'
+          searchFocused ? 'text-primary' : 'text-muted-foreground'
         }`} />
         <Input
           placeholder="Buscar arquivos por nome..."
@@ -92,7 +107,7 @@ export default function KnowledgeBaseFilters({
           onChange={(e) => onSearchChange(e.target.value)}
           onFocus={() => onSearchFocus(true)}
           onBlur={() => onSearchFocus(false)}
-          className="pl-10 konver-input-focus"
+          className="pl-10"
         />
         {searchTerm && (
           <button
@@ -104,64 +119,70 @@ export default function KnowledgeBaseFilters({
         )}
       </div>
 
-      {/* Filters and Sort */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      {/* Filters Row */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
         {/* Status Filter */}
-        <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
-          {statusOptions.map((status) => (
-            <button
-              key={status.key}
-              onClick={() => onStatusFilterChange(status.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                statusFilter === status.key
-                  ? 'konver-gradient-primary text-white shadow-lg konver-animate-bounce'
-                  : 'bg-muted/50 text-muted-foreground konver-hover-subtle'
-              }`}
-            >
-{status.key === 'all' ? 'Todos' : 
-               status.key === 'ready' ? 'Prontos' :
-               status.key === 'processing' ? 'Processando' : 'Erros'} ({status.count})
-            </button>
-          ))}
+        <div className="space-y-2">
+          <span className="text-xs text-muted-foreground font-medium">Status:</span>
+          <div className="flex space-x-1">
+            {statusOptions.map((status) => (
+              <button
+                key={status.key}
+                onClick={() => onStatusFilterChange(status.key)}
+                className={`px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                  statusFilter === status.key
+                    ? 'konver-gradient-primary text-white shadow-sm'
+                    : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'
+                }`}
+              >
+                {status.key === 'all' ? 'Todos' : 
+                 status.key === 'ready' ? 'Prontos' :
+                 status.key === 'processing' ? 'Processando' : 'Erros'} ({status.count})
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Type Filter */}
         {availableTypes.length > 0 && (
-          <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
-            <button
-              onClick={() => onTypeFilterChange('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                typeFilter === 'all'
-                  ? 'konver-gradient-accent text-white shadow-lg'
-                  : 'bg-muted/50 text-muted-foreground konver-hover-subtle'
-              }`}
-            >
-              Todos os Tipos
-            </button>
-            {availableTypes.map((type) => (
+          <div className="space-y-2">
+            <span className="text-xs text-muted-foreground font-medium">Tipo:</span>
+            <div className="flex space-x-1 flex-wrap">
               <button
-                key={type}
-                onClick={() => onTypeFilterChange(type)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                  typeFilter === type
-                    ? 'konver-gradient-accent text-white shadow-lg'
-                    : 'bg-muted/50 text-muted-foreground konver-hover-subtle'
+                onClick={() => onTypeFilterChange('all')}
+                className={`px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                  typeFilter === 'all'
+                    ? 'konver-gradient-accent text-white shadow-sm'
+                    : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'
                 }`}
               >
-                .{type.toUpperCase()}
+                Todos
               </button>
-            ))}
+              {availableTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => onTypeFilterChange(type)}
+                  className={`px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                    typeFilter === type
+                      ? 'konver-gradient-accent text-white shadow-sm'
+                      : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  .{type.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Sort Controls */}
-        <div className="flex items-center space-x-2 ml-auto">
-          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-            <span>Ordenar:</span>
+        <div className="space-y-2 lg:ml-auto">
+          <span className="text-xs text-muted-foreground font-medium">Ordenar:</span>
+          <div className="flex items-center space-x-2">
             <select
               value={sortField}
               onChange={(e) => onSortChange(e.target.value as SortField)}
-              className="bg-transparent border-none text-xs focus:outline-none cursor-pointer"
+              className="bg-muted/30 border border-muted/50 rounded-md text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {sortOptions.map((option) => (
                 <option key={option.key} value={option.key}>
@@ -169,81 +190,28 @@ export default function KnowledgeBaseFilters({
                 </option>
               ))}
             </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onSortChange(sortField)}
+              className="h-7 w-7 p-0"
+            >
+              {sortDirection === 'asc' ? (
+                <SortAsc className="w-3 h-3" />
+              ) : (
+                <SortDesc className="w-3 h-3" />
+              )}
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onSortChange(sortField)}
-            className="h-8 w-8 p-0"
-          >
-            {sortDirection === 'asc' ? (
-              <SortAsc className="w-4 h-4" />
-            ) : (
-              <SortDesc className="w-4 h-4" />
-            )}
-          </Button>
         </div>
       </div>
 
-      {/* Filter Results Summary */}
-      {(hasActiveFilters || filteredCount !== totalCount) && (
-        <div className="flex items-center justify-between py-2 text-sm">
-          <div className="text-muted-foreground">
-            {searchTerm && `Busca: "${searchTerm}" • `}
-            {statusFilter !== 'all' && `Status: ${statusFilter} • `}
-            {typeFilter !== 'all' && `Tipo: ${typeFilter} • `}
-            Mostrando {filteredCount} de {totalCount} arquivos
-          </div>
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="text-primary konver-hover-subtle h-8"
-            >
-              <X className="w-4 h-4 mr-1" />
-              Limpar Filtros
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* Active Filters Tags */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2">
-          {searchTerm && (
-            <Badge variant="secondary" className="text-xs">
-              Busca: {searchTerm}
-              <button
-                onClick={() => onSearchChange('')}
-                className="ml-1 hover:text-destructive"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          )}
-          {statusFilter !== 'all' && (
-            <Badge variant="secondary" className="text-xs">
-              Status: {statusFilter}
-              <button
-                onClick={() => onStatusFilterChange('all')}
-                className="ml-1 hover:text-destructive"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          )}
-          {typeFilter !== 'all' && (
-            <Badge variant="secondary" className="text-xs">
-              Tipo: {typeFilter}
-              <button
-                onClick={() => onTypeFilterChange('all')}
-                className="ml-1 hover:text-destructive"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          )}
+      {/* Results Summary */}
+      {filteredCount !== totalCount && (
+        <div className="pt-2 border-t border-muted/20">
+          <p className="text-xs text-muted-foreground">
+            Mostrando <span className="font-medium text-foreground">{filteredCount}</span> de <span className="font-medium text-foreground">{totalCount}</span> arquivos
+          </p>
         </div>
       )}
     </div>

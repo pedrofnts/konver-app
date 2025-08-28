@@ -42,108 +42,63 @@ export default function KnowledgeBaseUpload({
     fileInputRef.current?.click();
   };
 
-  // Drag and Drop handlers
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  }, [setDragActive]);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onFileUpload(e.dataTransfer.files);
-    }
-  }, [onFileUpload, setDragActive]);
-
+  // Simplified component - just the essential upload functionality
+  // Drag and drop is now handled by the parent component
+  
   return (
-    <div className="space-y-6">
-      {/* Upload Progress */}
+    <>
+      {/* Upload Progress - Only show when actually uploading */}
       {(uploading || uploadProgress.length > 0) && (
-        <Card className="p-4 konver-glass-card konver-animate-slide-down">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 konver-gradient-accent rounded-lg flex items-center justify-center">
-                  <Upload className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Enviando arquivos...</p>
-                  <p className="text-xs text-muted-foreground">
-                    {uploadProgress.length > 1 ? `${uploadProgress.length} arquivos na fila` : 'Upload único'}
-                  </p>
+        <div className="space-y-3">
+          {uploadProgress.map((progress, index) => (
+            <div key={index} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium truncate flex-1 mr-4">{progress.fileName}</p>
+                <div className="text-right">
+                  <p className="text-sm font-medium">{progress.progress}%</p>
+                  <p className="text-xs text-muted-foreground capitalize">{progress.status}</p>
                 </div>
               </div>
+              <Progress value={progress.progress} className="h-2" />
+              {progress.status === 'error' && (
+                <div className="flex items-center space-x-2 text-destructive text-xs">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Falha no upload</span>
+                </div>
+              )}
             </div>
-            
-            {uploadProgress.map((progress, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium truncate flex-1 mr-4">{progress.fileName}</p>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{progress.progress}%</p>
-                    <p className="text-xs text-muted-foreground capitalize">{progress.status}</p>
-                  </div>
-                </div>
-                <Progress value={progress.progress} className="h-2 konver-animate-pulse" />
-                {progress.status === 'error' && (
-                  <div className="flex items-center space-x-2 text-destructive text-xs">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>Falha no upload</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </Card>
+          ))}
+        </div>
       )}
 
-      {/* Upload Area */}
+      {/* Upload Area - Simplified */}
       {showUploadArea && (
         <div
-          className={`border-2 border-dashed rounded-2xl text-center transition-all duration-200 cursor-pointer ${
-            compact ? 'p-4' : 'p-6'
-          } ${
-            dragActive
-              ? 'border-primary bg-primary/5 konver-animate-pulse'
-              : 'border-border konver-hover-subtle'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
+          className="border-2 border-dashed border-muted/50 rounded-xl p-6 text-center transition-all duration-200 cursor-pointer hover:border-primary/50 hover:bg-primary/5"
           onClick={triggerFileUpload}
         >
-          <div className={`space-y-3 ${compact ? 'space-y-2' : ''}`}>
-            <div className={`konver-gradient-accent rounded-2xl flex items-center justify-center mx-auto shadow-lg konver-animate-float ${
-              compact ? 'w-12 h-12' : 'w-16 h-16'
-            }`}>
-              <Upload className={`text-white ${compact ? 'w-6 h-6' : 'w-8 h-8'}`} />
+          <div className="space-y-3">
+            <div className="w-12 h-12 konver-gradient-accent rounded-xl flex items-center justify-center mx-auto">
+              <Upload className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className={`font-medium mb-1 ${compact ? 'text-xs' : 'text-sm'}`}>
-                Arraste arquivos aqui ou <span className="text-primary underline cursor-pointer">navegue</span>
+              <p className="font-medium text-sm mb-1">
+                Clique para enviar arquivos ou arraste aqui
               </p>
-              <p className={`text-muted-foreground ${compact ? 'text-xs' : 'text-xs'}`}>
-                Suporta: .txt, .pdf, .json, .md, .xlsx, .csv, .docx, .doc • Máx 50MB cada
+              <p className="text-xs text-muted-foreground">
+                .txt, .pdf, .json, .md, .xlsx, .csv, .docx, .doc • Máx 50MB
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Upload Button (for cases without upload area) */}
+      {/* Upload Button (for header action) */}
       {!showUploadArea && (
         <Button 
           onClick={triggerFileUpload}
           disabled={uploading}
-          className="konver-button-primary w-full"
+          className="konver-button-primary"
         >
           <Upload className="w-4 h-4 mr-2" />
           {uploading ? 'Enviando...' : 'Enviar Arquivos'}
@@ -159,6 +114,6 @@ export default function KnowledgeBaseUpload({
         accept=".txt,.pdf,.json,.md,.xlsx,.csv,.docx,.doc"
         className="hidden"
       />
-    </div>
+    </>
   );
 }

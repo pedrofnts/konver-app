@@ -231,7 +231,7 @@ export default function FlowsContent({ assistantId }: FlowsContentProps) {
             variant: "default" as const
           }
         ]}
-        loading={isLoading}
+        loading={false}
         className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
       />
 
@@ -240,7 +240,37 @@ export default function FlowsContent({ assistantId }: FlowsContentProps) {
           <div className="flex-1 min-h-0 overflow-hidden">
             <ScrollArea className="h-full konver-scrollbar">
               <div className="p-6">
-                {flows.length === 0 ? (
+                {isLoading ? (
+                  // Loading skeleton for flows
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="konver-glass-card rounded-xl p-4 space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />
+                            <div className="h-4 bg-muted rounded animate-pulse w-24" />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-5 bg-muted rounded-full animate-pulse" />
+                            <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-3 bg-muted rounded animate-pulse w-16" />
+                          <div className="h-4 bg-muted rounded animate-pulse w-full" />
+                          <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-1">
+                            <div className="h-6 bg-muted rounded animate-pulse w-16" />
+                            <div className="h-6 bg-muted rounded animate-pulse w-12" />
+                          </div>
+                          <div className="h-4 bg-muted rounded animate-pulse w-12" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : flows.length === 0 ? (
                   <div className="flex items-center justify-center h-64 text-center">
                     <div className="max-w-sm space-y-4">
                       <div className="konver-gradient-primary w-16 h-16 rounded-xl flex items-center justify-center mx-auto shadow-lg">

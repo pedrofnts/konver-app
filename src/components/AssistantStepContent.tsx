@@ -61,14 +61,6 @@ const LoadingSpinner = memo<{ config?: LoadingStateConfig }>(({ config }) => (
       <div className="konver-gradient-primary w-16 h-16 rounded-3xl flex items-center justify-center shadow-xl konver-animate-float">
         <Loader2 className="w-8 h-8 text-white animate-spin" />
       </div>
-      <div className="text-center">
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          {config?.title || 'Carregando...'}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {config?.description || 'Por favor, aguarde enquanto carregamos o conteúdo.'}
-        </p>
-      </div>
     </div>
   </div>
 ));

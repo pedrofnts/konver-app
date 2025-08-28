@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   FileText,
   FileCode, 
@@ -40,6 +50,7 @@ export default function KnowledgeBaseFileCard({
   onRetry,
   animationDelay = 0
 }: KnowledgeBaseFileCardProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const getFileExtension = (fileName: string): string => {
     return fileName.split('.').pop()?.toLowerCase() || 'unknown';
@@ -155,46 +166,42 @@ export default function KnowledgeBaseFileCard({
       </div>
       
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {file.status === 'ready' && (
-            <>
-              {onPreview && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onPreview(file)}
-                  className="konver-hover-subtle h-8 w-8 p-0"
-                  title="Preview file"
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDownload(file.id)}
-                className="konver-hover-subtle h-8 w-8 p-0"
-                title="Download file"
-              >
-                <Download className="w-4 h-4" />
-              </Button>
-            </>
-          )}
-          {file.status === 'processing' && (
-            <div className="flex items-center space-x-2 text-warning">
-              <Clock className="w-4 h-4 konver-animate-spin" />
-                                      <span className="text-xs">Processando...</span>
-            </div>
-          )}
-          {file.status === 'error' && onRetry && (
+        <div className="flex items-center space-x-1">
+          {/* Download Button - Always available */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDownload(file.id)}
+            className="text-primary hover:text-primary konver-hover-subtle h-8 w-8 p-0"
+            title="Baixar arquivo"
+          >
+            <Download className="w-4 h-4" />
+          </Button>
+          
+          {/* Preview Button - Only for ready files */}
+          {file.status === 'ready' && onPreview && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onRetry(file.id)}
-              className="text-warning hover:text-warning konver-hover-subtle h-8 w-8 p-0"
-              title="Retry processing"
+              onClick={() => onPreview(file)}
+              className="konver-hover-subtle h-8 w-8 p-0"
+              title="Visualizar arquivo"
             >
-              <RefreshCw className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
+            </Button>
+          )}
+
+          
+          {file.status === 'error' && onRetry && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRetry(file.id)}
+              className="h-8 px-3 text-xs font-medium border-warning/20 hover:bg-warning/10 hover:border-warning/40 text-warning"
+              title="Tentar novamente"
+            >
+              <RefreshCw className="w-3 h-3 mr-1" />
+              Tentar Novamente
             </Button>
           )}
         </div>
@@ -202,9 +209,9 @@ export default function KnowledgeBaseFileCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => onDelete(file.id)}
+          onClick={() => setShowDeleteDialog(true)}
           className="text-destructive hover:text-destructive konver-hover-subtle h-8 w-8 p-0"
-          title="Delete file"
+          title="Excluir arquivo"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
@@ -222,6 +229,29 @@ export default function KnowledgeBaseFileCard({
           {file.chunks_count} fragmentos processados
         </div>
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o arquivo "{file.file_name}"? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDelete(file.id);
+                setShowDeleteDialog(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

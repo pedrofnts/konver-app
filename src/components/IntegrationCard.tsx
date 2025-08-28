@@ -180,7 +180,7 @@ export default memo<IntegrationCardProps>(function IntegrationCard({
       <div className="flex items-center justify-between mb-6">
         <div className="flex flex-col space-y-1">
           <StatusBadge status={integration.status} />
-          {getConnectedAccountName() && integration.status === 'connected' && (
+          {getConnectedAccountName() && integration.status === 'connected' && integration.platform !== 'kommo' && (
             <div className="text-xs text-muted-foreground/70 truncate max-w-[200px]">
               {getConnectedAccountName()}
             </div>

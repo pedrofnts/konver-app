@@ -216,7 +216,7 @@ export default function SettingsContent({
         compact={true}
         actions={headerActions}
         metrics={headerMetrics}
-        loading={isSaving}
+        loading={false}
         className="flex-shrink-0 shadow-none border-0 bg-transparent backdrop-blur-none"
       />
 

@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import KnowledgeBaseFileCard from "./KnowledgeBaseFileCard";
 import { 
   FileText,
   Trash2,
-  X
+  X,
+  Download
 } from "lucide-react";
 import { KnowledgeBaseFile } from "@/integrations/supabase/types";
 
@@ -21,6 +32,7 @@ interface KnowledgeBaseFileListProps {
   onDeleteFile: (fileId: string) => void;
   onRetryFile?: (fileId: string) => void;
   onBulkDelete: () => void;
+  onBulkDownload?: () => void;
   onClearSelection: () => void;
   emptyState?: React.ReactNode;
 }
@@ -35,9 +47,11 @@ export default function KnowledgeBaseFileList({
   onDeleteFile,
   onRetryFile,
   onBulkDelete,
+  onBulkDownload,
   onClearSelection,
   emptyState
 }: KnowledgeBaseFileListProps) {
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   // Loading skeleton
   const FileSkeleton = () => (
@@ -132,10 +146,21 @@ export default function KnowledgeBaseFileList({
                 <X className="w-4 h-4 mr-1" />
                 Limpar Seleção
               </Button>
+              {onBulkDownload && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onBulkDownload}
+                  className="h-8 border-primary/20 hover:bg-primary/10 hover:border-primary/40"
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  Baixar Selecionados
+                </Button>
+              )}
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={onBulkDelete}
+                onClick={() => setShowBulkDeleteDialog(true)}
                 className="konver-button-destructive h-8"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
@@ -145,6 +170,29 @@ export default function KnowledgeBaseFileList({
           </div>
         </Card>
       )}
+
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão em lote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir {selectedFiles.size} arquivo{selectedFiles.size > 1 ? 's' : ''} selecionado{selectedFiles.size > 1 ? 's' : ''}? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onBulkDelete();
+                setShowBulkDeleteDialog(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir {selectedFiles.size} arquivo{selectedFiles.size > 1 ? 's' : ''}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
