@@ -7,16 +7,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Bot, 
   Settings, 
-  MessageSquare, 
   MoreVertical, 
   Power, 
   Pause, 
   Plus, 
-  Activity, 
-  TrendingUp, 
   Eye, 
   Play, 
-  Calendar 
+  Calendar,
+  Trash2 
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBots, useDeleteBot, useUpdateBot } from "@/hooks/useBots";
@@ -76,6 +74,27 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
     }
   };
 
+  const handleDeleteBot = async (botId: string, botName: string) => {
+    if (!confirm(`Tem certeza que deseja excluir o assistente "${botName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      await deleteBot.mutateAsync(botId);
+      toast({
+        title: "Assistente excluído",
+        description: `O assistente "${botName}" foi excluído com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Error deleting bot:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir o assistente",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredBots = bots.filter(bot =>
     bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bot.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -83,7 +102,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
 
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <KonverCard key={i}>
             <div className="space-y-4">
@@ -156,7 +175,7 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {filteredBots.map((bot, index) => (
         <KonverCard
           key={bot.id}
@@ -169,42 +188,9 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
           style={{ animationDelay: `${index * 100}ms` }}
         >
           <div className="space-y-5">
-            {/* Enhanced Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 group/stat">
-                <div className="flex items-center gap-2">
-                  <div className="p-1 rounded-md bg-primary/10 group-hover/stat:bg-primary/20 transition-colors">
-                    <MessageSquare className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground">Conversas</span>
-                </div>
-                <p className="text-xl font-bold text-foreground transition-all duration-300">
-                  {bot.conversations.toLocaleString()}
-                </p>
-              </div>
-              
-              <div className="space-y-2 group/stat">
-                <div className="flex items-center gap-2">
-                  <div className="p-1 rounded-md bg-accent/10 group-hover/stat:bg-accent/20 transition-colors">
-                    <TrendingUp className="h-4 w-4 text-accent" />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground">Performance</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-xl font-bold text-foreground transition-all duration-300">
-                    {bot.performance}%
-                  </p>
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    bot.performance >= 95 ? "bg-green-500 animate-pulse" :
-                    bot.performance >= 80 ? "bg-yellow-500" : "bg-red-500"
-                  )}></div>
-                </div>
-              </div>
-            </div>
 
             {/* Enhanced Actions */}
-            <div className="flex items-center justify-between pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between pt-0">
               <div className="flex items-center gap-2">
                 <div className="p-1 rounded-md bg-muted/30">
                   <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -285,6 +271,17 @@ export default function BotsList({ searchQuery = '' }: BotsListProps) {
                           <span className="font-medium">Ativar</span>
                         </>
                       )}
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBot(bot.id, bot.name);
+                      }}
+                      className="hover:bg-destructive/10 cursor-pointer text-destructive"
+                    >
+                      <Trash2 className="mr-3 h-4 w-4 text-destructive" />
+                      <span className="font-medium">Excluir</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

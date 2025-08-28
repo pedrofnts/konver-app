@@ -30,7 +30,7 @@ export default function KonverStats({ stats, className }: KonverStatsProps) {
   };
 
   return (
-    <div className={cn("grid gap-6 md:grid-cols-2 lg:grid-cols-4", className)}>
+    <div className={cn("grid gap-4 md:grid-cols-2 lg:grid-cols-3", className)}>
       {stats.map((stat, index) => (
         <Card key={index} className="konver-card-stats konver-hover-subtle group overflow-hidden">
           <div className="flex items-center justify-between">

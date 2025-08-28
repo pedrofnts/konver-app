@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Bot, MessageSquare, Users, Zap } from "lucide-react";
+import { Plus, Search, Bot, MessageSquare, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import KonverLayout from "@/components/KonverLayout";
@@ -42,16 +42,6 @@ const Index = () => {
       icon: <Users className="h-5 w-5" />,
       trend: { value: 5, isPositive: true },
       description: "Online agora"
-    },
-    {
-      label: "Performance",
-      value: `${dashboardStats?.averagePerformance?.toFixed(1) || "0"}%`,
-      icon: <Zap className="h-5 w-5" />,
-      trend: { 
-        value: Math.round(dashboardStats?.averagePerformance || 0) >= 80 ? 2 : -2, 
-        isPositive: Math.round(dashboardStats?.averagePerformance || 0) >= 80 
-      },
-      description: "Precisão das respostas"
     }
   ];
 

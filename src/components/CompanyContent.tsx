@@ -290,7 +290,7 @@ export default function CompanyContent({ assistantId, companyInfo, onSave }: Com
 
             <div className="space-y-2">
               <Label htmlFor="professionals" className="text-sm font-medium">
-                Profissionais (nome, registro, especialidade)
+                Profissionais
               </Label>
               <Textarea
                 id="professionals"

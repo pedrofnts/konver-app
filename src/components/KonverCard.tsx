@@ -16,29 +16,34 @@ interface KonverCardProps {
   glow?: boolean;
 }
 
-const statusConfig: Record<string, { badge: string; indicator: string }> = {
+const statusConfig: Record<string, { badge: string; indicator: string; label: string }> = {
   active: {
     badge: 'konver-status-success border text-xs font-medium px-2 py-1 rounded-md',
-    indicator: 'bg-success shadow-sm animate-pulse'
+    indicator: 'bg-success shadow-sm animate-pulse',
+    label: 'Ativo'
   },
   inactive: {
     badge: 'bg-muted/20 text-muted-foreground border-muted/30 text-xs font-medium px-2 py-1 rounded-md',
-    indicator: 'bg-muted-foreground/50'
+    indicator: 'bg-muted-foreground/50',
+    label: 'Inativo'
   },
   pending: {
     badge: 'konver-status-warning border text-xs font-medium px-2 py-1 rounded-md',
-    indicator: 'bg-warning shadow-sm animate-pulse'
+    indicator: 'bg-warning shadow-sm animate-pulse',
+    label: 'Pendente'
   },
   error: {
     badge: 'konver-status-error border text-xs font-medium px-2 py-1 rounded-md',
-    indicator: 'bg-destructive shadow-sm animate-pulse'
+    indicator: 'bg-destructive shadow-sm animate-pulse',
+    label: 'Erro'
   }
 };
 
 const getStatusConfig = (status: string) => {
   return statusConfig[status] || {
     badge: 'bg-muted/10 text-muted-foreground border-muted/20',
-    indicator: 'bg-muted-foreground'
+    indicator: 'bg-muted-foreground',
+    label: status || 'Desconhecido'
   };
 };
 
@@ -108,7 +113,7 @@ export default function KonverCard({
               )}
               {status && (
                 <div className={cn(getStatusConfig(status).badge)}>
-                  {status}
+                  {getStatusConfig(status).label}
                 </div>
               )}
             </div>
